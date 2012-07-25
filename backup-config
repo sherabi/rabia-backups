@@ -1,0 +1,60 @@
+#############################################################################
+#backup-config is released under the General Public License.				#
+#Copyright (C) 2010-2012 Shezaan Topiwala									#
+#This file is part of "Rabia Backups".										#
+																			#	
+#backup-config is free software: you can redistribute it and or modify		#
+#it under the terms of the GNU General Public License as published by		#
+#the Free Software Foundation, either version 3 of the License, or			#
+#(at your option) any later version.										#
+																			#
+#backup-config is distributed in the hope that it will be useful,			#
+#but WITHOUT ANY WARRANTY; without even the implied warranty of				#
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the				#
+#GNU General Public License for more details.								#
+																			#
+#You should have received a copy of the GNU General Public License			#
+#along with backup-config.  If not, see <http://www.gnu.org/licenses/>.		#
+# Format                                                                  	#
+# remote/local:Server/IP:Include_dirs:Exclude_dirs:Retention_time_in_days 	#
+#                                                                         	#
+# To add directories that have spaces in the path use a single ? to ...   	#
+# represent all the spaces.                                               	#
+# For example:                                                            	#
+# /var/www/Web Site X/html will be represented as/var/www/Web?Site?X/html 	#
+#                                                                         	#
+# If "Web Site X" is the only directory/file that starts with Web, you ...	#
+# can use * instead, like so: /var/www/Web*                               	#
+#                                                                         	#
+#############################################################################
+
+# Field Definitions.
+#  field1   field2    field3   field4     field5          field6           field7        field8    field9
+# Location:Server/IP:Includes:Excludes:Retention-days:destination-overide:user-override:interval:non-admin-emails
+
+### Please Note: The last 4 parameters i.e. after retention time are optional ###
+
+### DAILY BACKUPS ###
+# Example.com's backups
+remote:example.com:/var/www/html,/var/log/httpd,/etc/httpd/conf*,/etc/php.ini,/usr/local/mysqlbackups,/etc/pki/tls::30:/virtual-machines/backups # Overriding location specified
+
+#Some other IP backup
+remote:123.456.789.000:/home/user::7:/virtual-machines/backups:user # Overriding location and user specified
+
+### WEEKLY BACKUPS ###
+local:local-test:/root:.*,Downloads:3:::weekly-full-thursday # Full local weekly backups every Thursday
+local:local-test:/root:.*,Downloads:3:::weekly-incremental-friday # Incremental local weekly backups every Friday
+remote:123.456.789.000:/home/user/code::7::user:weekly-full-thursday  # Full remote weekly backups every Wednesday
+remote:123.456.789.000:/home/user/code::7::user:weekly-incremental-monday  # Incremental remote weekly backups every Monday
+
+### MONTHLY BACKUPS ###
+local:local-test:/root:.*,Downloads:3:::monthly-full-14 # Full local monthly backups on the 14th of every month
+local:local-test:/root:.*,Downloads:3:::monthly-incremental-11 # Incremental local monthly backups on the 11th of every month
+remote:123.456.789.000:/home/user/code::7::user:monthly-full-13  # Full remote monthly backups on the 13th of every month
+remote:123.456.789.000:/home/user/code::7::user:monthly-incremental-2 # Incremental remote monthly backups on the 2nd of every month
+
+### YEARLY BACKUPS ###
+local:local-test:/root:.*,Downloads:3:::yearly-on-april-15-full # Full local yearly backups on the 15th of April
+local:local-test:/root:.*,Downloads:3:::yearly-on-may-5-incremental # Incremental local yearly backups on the 5th of May
+remote:123.456.789.000:/home/user/code::7::user:yearly-on-january-13-full # Full remote yearly backups on the 13th of January
+remote:123.456.789.000:/home/user/code::7::user:yearly-on-november-12-incremental # Incremental remote yearly backups on the 12th of November
