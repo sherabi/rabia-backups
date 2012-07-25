@@ -17,6 +17,7 @@
 #along with append-cpr.  If not, see <http://www.gnu.org/licenses/>.
 
 # This script appends the above copyright license.
+
 for file in `ls -1 .`; do
     sed -i "2i\
 #$file is released under the General Public License.\n\
