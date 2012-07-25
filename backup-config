@@ -28,7 +28,7 @@
 #                                                                         	#
 #############################################################################
 
-# All fields and what they mean.
+# Field Definitions.
 #  field1   field2    field3   field4     field5          field6           field7        field8    field9
 # Location:Server/IP:Includes:Excludes:Retention-days:destination-overide:user-override:interval:non-admin-emails
 
