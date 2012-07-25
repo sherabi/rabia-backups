@@ -1,0 +1,369 @@
+#!/bin/bash
+#backup-yearly is released under the General Public License.
+#Copyright (C) 2010-2012 Shezaan Topiwala
+#This file is part of "Rabia Backups".
+
+#backup-yearly is free software: you can redistribute it and or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#backup-yearly is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with backup-yearly.  If not, see <http://www.gnu.org/licenses/>.
+
+### This script is called by "run-backup-yearly" ###
+. backup-headers
+
+EXCLUDE_FILE="$LOG_DIR/backup-excludes-yearly"
+INCLUDE_FILE="$LOG_DIR/backup-includes-yearly"
+BACKUP_MAIL="$LOG_DIR/backup-mail-yearly"
+DISK_STATUS="$LOG_DIR/disk-report-yearly"
+RSYNC='rsync -avR --delete --stats'
+
+while getopts "t:c:l:u:" options
+    do
+        case $options in
+            t)
+                BASE_BACKUP_DIR="$OPTARG"
+                ;;
+            c)
+                BACKUP_CONFIG="$OPTARG"
+                ;;
+            l)
+                BACKUP_LOG="$OPTARG"
+                ;;
+            u)
+                BACKUP_USER="$OPTARG"
+                ;;
+            --)
+                shift
+                break;;
+        esac
+    done
+
+if [[ -z ${BACKUP_CONFIG} || -z ${BACKUP_LOG} ]]; then
+    echo "The following are MANDATORY options"
+    echo "-c (configuration file) is MANDATORY"
+    echo "-l (backup log) is MANDATORY"
+    exit 1
+fi
+
+TODAY=`date +%F`
+DESTINATION=""
+OVERIDE_USER=""
+
+# Parse out the config file.
+parse_config() {
+    while read line
+        do
+            LOCATION=`echo $line | awk -F":" '{ print $1 }'`
+            SERVER=`echo $line | awk -F":" '{ print $2 }'`
+            local INCLUDES=`echo $line | awk -F":" '{ print $3 }' | tr "," "\n" > $INCLUDE_FILE`
+            local EXCLUDES=`echo $line | awk -F":" '{ print $4 }' | tr "," "\n" > $EXCLUDE_FILE`
+            RETENTION=`echo $line | awk -F":" '{ print $5 }'`
+            local TARGET=`echo $line | awk -F":" '{ print $6 }'`
+            local USER=`echo $line | awk -F":" '{ print $7 }'`
+            INTERVAL=`echo $line | awk -F":" '{ print $8 }'`
+            if [[ "$INTERVAL" == yearly-on* ]]; then
+                INTERVAL_MONTH=`echo $INTERVAL | awk -F"-" '{ print $3 }' | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
+                echo "INTERVAL MONTH: $INTERVAL_MONTH"
+                INTERVAL_MONTH_DAY=`echo $INTERVAL | awk -F"-" '{ print $4 }'`
+                echo "INTERVAL MONTH DAY: $INTERVAL_MONTH_DAY"
+            fi
+            if [[ -z $TARGET && -n $BASE_BACKUP_DIR ]]; then
+                echo -e "=== START OF BACKUPS FOR $SERVER ===\n"
+				echo "*** BACKUPS FOR $SERVER STARTED `date` ***"
+                echo "Only default location specified: Priority set to Default $BASE_BACKUP_DIR"
+                DESTINATION=$BASE_BACKUP_DIR
+            fi
+
+            if [[ -n $TARGET && -z $BASE_BACKUP_DIR ]]; then
+                echo -e "=== START OF BACKUPS FOR $SERVER ===\n"
+				echo "*** BACKUPS FOR $SERVER STARTED `date` ***"
+                echo "Only target location specified: Priority set to Target $TARGET"
+                DESTINATION=$TARGET
+            fi
+
+            if [[ -n $TARGET && -n $BASE_BACKUP_DIR ]]; then
+                echo -e "=== START OF BACKUPS FOR $SERVER ===\n"
+				echo "*** BACKUPS FOR $SERVER STARTED `date` ***"
+                echo "Both locations specified: Priority set to Target $TARGET"
+                DESTINATION=$TARGET
+            fi
+
+            if [[ -z $TARGET && -z $BASE_BACKUP_DIR ]]; then
+                echo -e "=== START OF BACKUPS FOR $SERVER ===\n"
+				echo "*** BACKUPS FOR $SERVER STARTED `date` ***"
+                echo "You have neither provided a default directory as specified by the -t flag, nor have you specified a backup directory as specified by the 6th column in your config file."
+            fi
+
+            if [[ -z $USER && -n $BACKUP_USER ]]; then
+                echo "Only default user specified: Priority to Default user $BACKUP_USER"
+                OVERIDE_USER=$BACKUP_USER
+            fi
+
+            if [[ -n $USER && -z $BACKUP_USER ]]; then
+                echo "Only overiding user specified: Priority to use Overide user $USER"
+                OVERIDE_USER=$USER
+            fi
+
+            if [[ -n $USER && -n $BACKUP_USER ]]; then
+                echo "Both users specified: Priority to use Overide user $USER"
+                OVERIDE_USER=$USER
+            fi
+
+            if [[ -z $USER && -z $BACKUP_USER ]]; then
+                echo "You have neither provided a default user as specified by the -u flag, nor have you specified an overiding user as specified by the 7th column in your config file."
+            fi
+
+            disk_space_check
+            if [[ "$INTERVAL" == yearly-on*-full ]]; then
+                echo "******* Commencing FULL YEARLY BACKUPS for $SERVER *******"
+                yearly_full_backup $SERVER
+                echo "******* Completed FULL YEARLY BACKUPS for $SERVER *******"
+            elif [[ "$INTERVAL" == yearly-on*-incremental* ]]; then
+                echo "******* Commencing INCREMENTAL YEARLY  BACKUPS for $SERVER *******"
+                yearly_incremental_backup $SERVER
+                echo "******* Completed INCREMENTAL YEARLY BACKUPS for $SERVER *******"
+            else
+                echo "You've specified an invalid option"
+            fi
+			echo "*** BACKUPS FOR $SERVER ENDED `date` ***"
+            echo -e "=== END OF BACKUPS FOR $SERVER ===\n"
+        done < $BACKUP_CONFIG_YEARLY
+}
+
+delete_old() {
+    # First count number of directories.
+    local server=$2
+    local directory=$3
+    mkdir -p $directory
+    local count=0
+    declare -a filestack
+    for stuff in `ls -1 $directory`; do
+        local yyyy=`echo $stuff | cut -d '-' -f1`
+        local yyyy_len=`echo ${#yyyy}`
+        isNumber $yyyy
+        local yyyy_result=$myresult
+
+        local mm=`echo $stuff | cut -d '-' -f2`
+        local mm_len=`echo ${#mm}`
+        isNumber $mm
+        local mm_result=$myresult
+
+        local dd=`echo $stuff | cut -d '-' -f3`
+        local dd_len=`echo ${#dd}`
+        isNumber $dd
+        local dd_result=$myresult
+
+        if [[ $yyyy_result -eq 0 || $mm_result -eq 0 || $dd_result -eq 0 || -z $yyyy || -z $mm || -z $dd || "$yyyy_len" -ne 4 || "$mm_len" -ne 2 || "$dd_len" -ne 2 ]]; then
+            echo -n ""
+        else
+            count=$[$count+1]
+            filestack=( "${filestack[@]}" "$stuff" )
+        fi
+    done
+
+    echo "Filestack: ${filestack[@]}"
+    echo "Files: $count"
+
+    local delete_num=""
+    if [ "$count" -eq "$1" ]; then
+        # First check to see if this is a rerun on the same day
+        local stack_length=${#filestack[@]}
+        local last_element=${filestack[$stack_length-1]}
+        echo "Last element: $last_element"
+        if [ $TODAY == $last_element ]; then
+            echo "Backup of this name already exists"
+            delete_num=0
+        else
+            delete_num=$[$count-$1+1]
+            echo "Files to delete, count match: $delete_num"
+        fi
+    elif [ "$count" -gt "$1" ]; then
+        delete_num=$[$count-$1+1]
+        echo "Files to delete, count greater: $delete_num"
+    else
+        delete_num=0
+        echo "Nothing to delete: $delete_num"
+    fi
+        cd $directory
+        local mystack=`echo ${filestack[@]} | sort | tr " " "\n" | head -n$delete_num | xargs -d '\n' rm -rf`
+}
+
+yearly_full_local_sync() {
+    while read line
+        do  
+            $RSYNC --exclude-from=$EXCLUDE_FILE $line $TODAY
+        done < $INCLUDE_FILE
+}
+
+yearly_full_remote_sync() {
+    local server=$1
+    local connection="-e ssh $OVERIDE_USER@$server:"
+    while read line
+        do
+            $RSYNC --exclude-from=$EXCLUDE_FILE $connection$line $TODAY
+        done < $INCLUDE_FILE
+}
+
+location_sync_full() {
+    local server=$1
+    if [ "$LOCATION" == "local" ]; then
+        yearly_full_local_sync
+    elif [ "$LOCATION" == "remote" ]; then
+        yearly_full_remote_sync $server
+    else
+        echo "You can only specify \"remote\" or \"local\""
+    fi
+}
+
+yearly_full_backup() {
+    local today=`date +%d`
+    local server=$1
+    local year=`date +%Y`
+    local month=`date +%B`
+    if [[ $INTERVAL_MONTH == $month && $INTERVAL_MONTH_DAY == $today && "$INTERVAL" == yearly-on*-full ]]; then
+        dir="$DESTINATION/$server/yearly/yearly-full/$year"
+        mkdir -p $dir
+        delete_old $RETENTION $server $dir
+        cd $dir
+        location_sync_full $server
+    else
+        echo "You have specified an invalid month or day or both or your server $SERVER is not scheduled for a backup today."
+    fi
+}
+
+copy_to_today() {
+    local server=$1
+    local year=$2
+    local CURRENT="$DESTINATION/$server/yearly/yearly-incremental/current"
+    cp -fal $CURRENT/* $DESTINATION/$server/yearly/yearly-incremental/$year/$TODAY
+}
+
+yearly_incremental_local_sync() {
+    local server=$1
+    local CURRENT="$DESTINATION/$server/yearly/yearly-incremental/current"
+    while read line
+        do
+            $RSYNC --exclude-from=$EXCLUDE_FILE $line $CURRENT
+        done < $INCLUDE_FILE
+}
+
+yearly_incremental_remote_sync() {
+    local server=$1
+    local CURRENT="$DESTINATION/$server/yearly/yearly-incremental/current"
+    local connection="-e ssh $OVERIDE_USER@$server:"
+    while read line
+        do
+            $RSYNC --exclude-from=$EXCLUDE_FILE $connection$line $CURRENT
+        done < $INCLUDE_FILE
+}
+
+location_sync_incremental() {
+    local server=$1
+    if [ "$LOCATION" == "local" ]; then
+        yearly_incremental_local_sync $server
+    elif [ "$LOCATION" == "remote" ]; then
+        yearly_incremental_remote_sync $server
+    else
+        echo "You can only specify \"remote\" or \"local\""
+    fi
+}
+
+yearly_incremental_backup() {
+    local today=`date +%d`
+    local server=$1
+    local year=`date +%Y`
+    local month=`date +%B`
+    if [[ $INTERVAL_MONTH == $month && $INTERVAL_MONTH_DAY == $today && "$INTERVAL" == yearly-on*-incremental ]]; then
+        dir=$DESTINATION/$server/yearly/yearly-incremental/$year
+        mkdir -p $dir
+        delete_old $RETENTION $server $dir
+        location_sync_incremental $server
+        copy_to_today $server $year
+    else
+        echo "You have specified an invalid month or day or both or your server $SERVER is not scheduled for a backup today."
+    fi
+}
+
+disk_space_check() {
+    echo "Destination $DESTINATION"
+    df -hP $DESTINATION > $DISK_STATUS
+    usep=`cat $DISK_STATUS | awk '{ print $5 }' | grep -v ^Use | tr -d %`
+    if [[ $usep -ge $DISK_SPACE_ALERT ]]; then
+        echo "Running out of space \"$partition ($usep%)\" on $(hostname) as of $(date)" > $BACKUP_MAIL
+        echo "Since threshold for disk space was reached at $DISK_SPACE_ALERT%, backup was aborted." >> $BACKUP_MAIL
+        mailx -s "Alert: Almost out of disk space, backups ABORTED - $usep%" $ADMIN_EMAILS < $BACKUP_MAIL
+        echo "Running out of space \"$partition ($usep%)\" on $(hostname) as of $(date)"
+        echo "Since threshold for disk space was reached at $DISK_SPACE_ALERT%, backup was aborted."
+        exit 1
+    fi
+}
+
+cleanup() {
+    rm -rf $LOG_DIR/*
+}
+
+isNumber() {
+    if [[ $1 = *[[:digit:]]* ]]; then
+        myresult=1
+    else
+        myresult=0
+    fi
+}
+
+main() {
+        parse_config
+        #cleanup
+}
+
+PID="/tmp/backup-yearly.pid"
+if [[ -f $PID ]]; then
+	mailx -s "Yearly backup process still running as of today `date +%F` on `hostname`" $ADMIN_EMAILS < $PID
+    exit 1
+else
+	echo "This backup started on `date`" > $PID
+    main &> $BACKUP_LOG
+fi
+
+NOW=`date +%F@%T`
+cp $BACKUP_LOG $BACKUP_LOG.$NOW
+
+report() {
+    while read line
+    do  
+        local server=`echo $line | awk -F":" '{ print $2 }'`
+        local mail_list=`echo $line | awk -F":" '{ print $9 }'`
+        sed -n "/=== START OF BACKUPS FOR $server ===/,/=== END OF BACKUPS FOR $server ===/p" $BACKUP_LOG > $LOG_DIR/$server-log
+        if [[ -n $mail_list ]]; then
+            mailx -s "Backup Log for $server `date +%F` from `hostname`" $mail_list < $LOG_DIR/$server-log
+        else
+            mailx -s "Backup Log for $server `date +%F` from `hostname`" $ADMIN_EMAILS < $LOG_DIR/$server-log
+        fi
+    done < $BACKUP_CONFIG_YEARLY
+    mailx -s "Backup Master Log `date +%F` from `hostname`" $ADMIN_EMAILS <  $BACKUP_LOG
+}
+
+report
+
+metrics() {
+    local metrics_file="$LOG_DIR/$DESTINATION-metrics"
+    rm -rf $metrics_file
+    echo "== Per server metrics ===" >> $metrics_file
+    for file in `ls -1 $DESTINATION`
+        do  
+            du -h --max-depth=0 $DESTINATION/$file >> $metrics_file
+        done
+    echo -e "\n=== Disk Space Usage ===" >> $metrics_file
+    df -hP $DESTINATION >> $metrics_file
+    mailx -s "Metrics Log `date +%F` from `hostname`" $ADMIN_EMAILS < $metrics_file
+}
+
+metrics
+rm $PID

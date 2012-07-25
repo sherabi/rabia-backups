@@ -1,0 +1,23 @@
+#!/bin/bash -x
+#run-backup-daily is released under the General Public License.
+#Copyright (C) 2010-2012 Shezaan Topiwala
+#This file is part of "Rabia Backups".
+
+#run-backup-daily is free software: you can redistribute it and or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#run-backup-daily is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with run-backup-daily.  If not, see <http://www.gnu.org/licenses/>.
+
+### DO NOT EDIT BELOW THIS LINE ###
+. backup-headers
+mkdir -p $LOG_DIR
+cat $BACKUP_CONFIG | grep -v '^\#' | grep -v '^$' | grep -vE 'week|month|year' | awk -F":" '{ print $1":"$2":"$3":"$4":"$5":"$6":"$7":"$8":"$9 }' > $BACKUP_CONFIG_DAILY
+$BACKUP_DAILY -t $BACKUP_TARGET -c $BACKUP_CONFIG_DAILY -l $BACKUP_LOG_DAILY -u $BACKUP_USER

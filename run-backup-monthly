@@ -1,0 +1,23 @@
+#!/bin/bash -x
+#run-backup-monthly is released under the General Public License.
+#Copyright (C) 2010-2012 Shezaan Topiwala
+#This file is part of "Rabia Backups".
+
+#run-backup-monthly is free software: you can redistribute it and or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#run-backup-monthly is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with run-backup-monthly.  If not, see <http://www.gnu.org/licenses/>.
+
+### DO NOT EDIT BELOW THIS LINE ###
+. backup-headers
+mkdir -p $LOG_DIR
+cat $BACKUP_CONFIG | grep -v '^\#' | grep -v '^$' | grep -i 'monthly' | awk -F":" '{ print $1":"$2":"$3":"$4":"$5":"$6":"$7":"$8":"$9 }' > $BACKUP_CONFIG_MONTHLY
+$BACKUP_MONTHLY -t $BACKUP_TARGET -c $BACKUP_CONFIG_MONTHLY -l $BACKUP_LOG_MONTHLY -u $BACKUP_USER
