@@ -160,11 +160,12 @@ delete_old() {
         fi
     done
 
-    echo "Filestack: ${filestack[@]}"
-    echo "Files: $count"
+	#For Debugging Only
+    #echo "Filestack: ${filestack[@]}"
+    #echo "Files: $count"
 
     local delete_num=""
-    if [ "$count" -eq "$1" ]; then
+    if [ "$count" -le "$1" ]; then
         # First check to see if this is a rerun on the same day
         local stack_length=${#filestack[@]}
         local last_element=${filestack[$stack_length-1]}
