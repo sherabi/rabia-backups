@@ -39,7 +39,11 @@
 remote:example.com:/var/www/html,/var/log/httpd,/etc/httpd/conf*,/etc/php.ini,/usr/local/mysqlbackups,/etc/pki/tls::30:/virtual-machines/backups # Overriding location specified
 
 #Some other IP backup
+<<<<<<< HEAD
 remote:123.456.789.000:/home/user::7:/virtual-machines/backups:user1 # Overriding location and user specified
+=======
+remote:123.456.789.000:/home/user::7:/virtual-machines/backups:user # Overriding location and user specified
+>>>>>>> 5789fca4f09a441af4015003dc291158fd662c5c
 
 ### WEEKLY BACKUPS ###
 local:local-test:/root:.*,Downloads:3:::weekly-full-thursday # Full local weekly backups every Thursday

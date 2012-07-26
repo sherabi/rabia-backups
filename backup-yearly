@@ -46,6 +46,16 @@ while getopts "t:c:l:u:" options
         esac
     done
 
+<<<<<<< HEAD
+=======
+if [[ -z ${BACKUP_CONFIG} || -z ${BACKUP_LOG} ]]; then
+    echo "The following are MANDATORY options"
+    echo "-c (configuration file) is MANDATORY"
+    echo "-l (backup log) is MANDATORY"
+    exit 1
+fi
+
+>>>>>>> 5789fca4f09a441af4015003dc291158fd662c5c
 TODAY=`date +%F`
 DESTINATION=""
 OVERIDE_USER=""
@@ -162,12 +172,20 @@ delete_old() {
         fi
     done
 
+<<<<<<< HEAD
 	#For Debugging Only
     #echo "Filestack: ${filestack[@]}"
     #echo "Files: $count"
 
     local delete_num=""
     if [ "$count" -le "$1" ]; then
+=======
+    echo "Filestack: ${filestack[@]}"
+    echo "Files: $count"
+
+    local delete_num=""
+    if [ "$count" -eq "$1" ]; then
+>>>>>>> 5789fca4f09a441af4015003dc291158fd662c5c
         # First check to see if this is a rerun on the same day
         local stack_length=${#filestack[@]}
         local last_element=${filestack[$stack_length-1]}

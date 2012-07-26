@@ -15,7 +15,10 @@
 
 #You should have received a copy of the GNU General Public License
 #along with backup-headers.  If not, see <http://www.gnu.org/licenses/>.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5789fca4f09a441af4015003dc291158fd662c5c
 BIN=$HOME # Parent directory for all "backup scripts" and "backup-config".
 BACKUP_DAILY=$BIN/backup-daily # Executable for daily backups.
 BACKUP_WEEKLY=$BIN/backup-weekly # Executable for weekly backups.
@@ -26,7 +29,11 @@ BACKUP_TARGET=/tmp # Parent destination where all backups will be stored. Must b
 LOG_DIR=/tmp/backup-logs # Location of log files.
 DISK_SPACE_ALERT=90 # Backups are aborted if this disk space threshold is reached.
 BACKUP_USER="root" # Default remote and local backup user. This user can be overridden in the config file.
+<<<<<<< HEAD
 ADMIN_EMAILS="super-admin1@example.com, super-admin2@example.com"
+=======
+ADMIN_EMAILS="user1@example.com, user2@example.com"
+>>>>>>> 5789fca4f09a441af4015003dc291158fd662c5c
 
 ### DO NOT EDIT BELOW THIS LINE ###
 TODAY=`date +%F@%T`
