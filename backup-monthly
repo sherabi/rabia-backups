@@ -50,18 +50,6 @@ while getopts "t:c:l:u:" options
         esac
     done
 
-if [[ $1 == "" ]]; then
-	echo "Incorrect flags specified" 
-	exit 1
-fi
-
-if [[ -z ${BACKUP_CONFIG} || -z ${BACKUP_LOG} ]]; then
-    echo "The following are MANDATORY options"
-    echo "-c (configuration file) is MANDATORY"
-    echo "-l (backup log) is MANDATORY"
-    exit 1
-fi
-
 TODAY=`date +%F`
 DESTINATION=""
 OVERIDE_USER="" 
