@@ -1,7 +1,4 @@
 1 2 * * * cd /root/backup-scripts && ./run-backup-daily
-<<<<<<< HEAD
 1 3 * * * cd /root/backup-scripts && ./run-backup-weekly
 1 4 * * * cd /root/backup-scripts && ./run-backup-monthly
 1 5 * * * cd /root/backup-scripts && ./run-backup-yearly
-=======
->>>>>>> 5789fca4f09a441af4015003dc291158fd662c5c
