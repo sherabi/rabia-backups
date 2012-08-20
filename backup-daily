@@ -114,7 +114,7 @@ parse_config() {
             fi
 
             disk_space_check
-            delete_old $RETENTION $SERVER
+            delete_old $RETENTION $SERVER $DESTINATION/$SERVER/daily
             if [ "$LOCATION" == "remote" ] ; then
                 backup_remote $SERVER
             else
@@ -132,7 +132,7 @@ parse_config() {
 delete_old() {
     # First count number of directories.
     local server=$2
-    local directory="$DESTINATION/$server"
+    local directory=$3
     local count=0
     declare -a filestack
     for stuff in `ls -1 $directory`; do
