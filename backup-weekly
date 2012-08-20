@@ -220,7 +220,6 @@ weekly_full_backup() {
     if [[ $weekday == "Monday" && $INTERVAL == "weekly-full-monday" ]]; then
         dir="$DESTINATION/$server/weekly/weekly-full/$weekday"
         mkdir -p $dir
-        #rm -rf "$DESTINATION/$server/weekly/weekly-full/$weekday/$TODAY"
         delete_old $RETENTION $server $dir
         cd $dir
         location_sync_full $server

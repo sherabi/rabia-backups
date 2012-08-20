@@ -229,7 +229,6 @@ monthly_full_backup() {
     if [[ $today == "1" && $INTERVAL == "monthly-full-1" ]]; then
         dir="$DESTINATION/$server/monthly/monthly-full/$month"
         mkdir -p $dir
-        #rm -rf "$DESTINATION/$server/monthly/monthly-full/$month/$TODAY"
         delete_old $RETENTION $server $dir
         cd $dir
         location_sync_full $server $server
