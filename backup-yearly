@@ -347,7 +347,7 @@ report() {
 report
 
 metrics() {
-    local metrics_file="$LOG_DIR/$DESTINATION-metrics"
+    local metrics_file="$LOG_DIR/$SERVER-metrics"
     rm -rf $metrics_file
     echo "== Per server metrics ===" >> $metrics_file
     for file in `ls -1 $DESTINATION`
