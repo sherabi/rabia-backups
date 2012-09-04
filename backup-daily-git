@@ -21,7 +21,7 @@
 
 BACKUP_MAIL="$LOG_DIR_GIT/backup-mail-daily"
 DISK_STATUS="$LOG_DIR_GIT/disk-report-daily"
-#REPO_FILE="$LOG_DIR_GIT/backup-repos-daily"
+REPO_FILE="$LOG_DIR_GIT/backup-repos-daily"
 
 ####### DO NOT EDIT BELOW THIS LINE #######
 
@@ -58,8 +58,7 @@ parse_config() {
         do  
             VCS_USER=`echo $line | awk -F":" '{ print $1 }'`
             SERVER=`echo $line | awk -F":" '{ print $2 }'`
-            #REPO=`echo $line | awk -F":" '{ print $3 }' | tr "," "\n" > $REPO_FILE`
-            REPO=`echo $line | awk -F":" '{ print $3 }'`
+            REPO=`echo $line | awk -F":" '{ print $3 }' | tr "," "\n" > $REPO_FILE`
             local RETENTION=`echo $line | awk -F":" '{ print $4 }'`
             local TARGET=`echo $line | awk -F":" '{ print $5 }'`
             local USER=`echo $line | awk -F":" '{ print $6 }'`
@@ -111,7 +110,6 @@ parse_config() {
             fi
 
             disk_space_check
-            delete_old $RETENTION $SERVER $DESTINATION/$SERVER/git-backups/$REPO/full
 			backup_remote $SERVER
             echo "*** BACKUPS FOR $SERVER ENDED `date` ***"
             echo -e "=== END OF BACKUPS FOR $SERVER ===\n"
@@ -184,8 +182,13 @@ backup_remote() {
     local server=$1
 	local GIT_BACKUPS="$DESTINATION/$server/git-backups"
 	mkdir -p $GIT_BACKUPS
-	git clone $VCS_USER@$server:$REPO $GIT_BACKUPS/$REPO/full/$TODAY
-	git clone --bare $VCS_USER@$server:$REPO $GIT_BACKUPS/$REPO/bare/$TODAY
+	while read line
+        do
+            delete_old $RETENTION $SERVER $DESTINATION/$SERVER/git-backups/$line/full
+            delete_old $RETENTION $SERVER $DESTINATION/$SERVER/git-backups/$line/bare
+            git clone $VCS_USER@$server:$line $GIT_BACKUPS/$line/full/$TODAY
+            git clone --bare $VCS_USER@$server:$line $GIT_BACKUPS/$line/bare/$TODAY
+        done < $REPO_FILE
 }
 
 disk_space_check() {
