@@ -1,0 +1,30 @@
+#############################################################################
+#backup-config-git is released under the General Public License.			#
+#Copyright (C) 2010-2012 Shezaan Topiwala									#
+#This file is part of "Rabia Backups".										#
+#																			#	
+#backup-config is free software: you can redistribute it and or modify		#
+#it under the terms of the GNU General Public License as published by		#
+#the Free Software Foundation, either version 3 of the License, or			#
+#(at your option) any later version.										#
+#																			#
+#backup-config is distributed in the hope that it will be useful,			#
+#but WITHOUT ANY WARRANTY; without even the implied warranty of				#
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the				#
+#GNU General Public License for more details.								#
+#																			#
+#You should have received a copy of the GNU General Public License			#
+#along with backup-config.  If not, see <http://www.gnu.org/licenses/>.		#
+#                                                                         	#
+# To add directories that have spaces in the path use a single ? to ...   	#
+# represent all the spaces.                                               	#
+# For example:                                                            	#
+# /var/www/Web Site X/html will be represented as/var/www/Web?Site?X/html 	#
+#                                                                         	#
+#############################################################################
+
+# Field Definitions.
+#  field1	field2		field3			field4     		field5          	field6 		field7
+# git-user:Server/IP:repoitory-name:Retention-days:destination-overide:user-override:non-admin-emails
+
+vcs:example.com:testing:7:/tmp:backup-git:non-admin1@example.com, non-admin2@example.com
