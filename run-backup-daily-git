@@ -19,5 +19,5 @@
 ### DO NOT EDIT BELOW THIS LINE ###
 . backup-headers-git
 mkdir -p $LOG_DIR_GIT
-cat $BACKUP_CONFIG_GIT | grep -v '^\#' | grep -v '^$' | grep -vE 'week|month|year' | awk -F":" '{ print $1":"$2":"$3":"$4":"$5":"$6 }' > $BACKUP_CONFIG_DAILY_GIT
+cat $BACKUP_CONFIG_GIT | grep -v '^\#' | grep -v '^$' | grep -vE 'week|month|year' | awk -F":" '{ print $1":"$2":"$3":"$4":"$5":"$6":"$7 }' > $BACKUP_CONFIG_DAILY_GIT
 $BACKUP_DAILY_GIT -t $BACKUP_TARGET_GIT -c $BACKUP_CONFIG_GIT -l $BACKUP_LOG_DAILY_GIT -u $VCS_USER
