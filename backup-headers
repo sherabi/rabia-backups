@@ -16,7 +16,7 @@
 #You should have received a copy of the GNU General Public License
 #along with backup-headers.  If not, see <http://www.gnu.org/licenses/>.
 
-BIN=$HOME # Parent directory for all "backup scripts" and "backup-config".
+BIN=$HOME/rabia-backups # Parent directory for all "backup scripts" and "backup-config".
 BACKUP_DAILY=$BIN/backup-daily # Executable for daily backups.
 BACKUP_WEEKLY=$BIN/backup-weekly # Executable for weekly backups.
 BACKUP_MONTHLY=$BIN/backup-monthly # Executable for monthly backups.

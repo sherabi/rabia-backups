@@ -16,7 +16,7 @@
 #You should have received a copy of the GNU General Public License
 #along with backup-headers.  If not, see <http://www.gnu.org/licenses/>.
 
-BIN_GIT=$HOME # Parent directory for all "backup scripts" and "backup-config".
+BIN_GIT=$HOME/rabia-backups # Parent directory for all "backup scripts" and "backup-config".
 BACKUP_DAILY_GIT=$BIN_GIT/backup-daily-git # Executable for daily backups.
 BACKUP_CONFIG_GIT=$BIN_GIT/backup-config-git # Location of configuration file.
 BACKUP_TARGET_GIT=/tmp # Parent destination where all backups will be stored. Must be changed to meet your criteria.
