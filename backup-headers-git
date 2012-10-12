@@ -19,8 +19,8 @@
 BIN_GIT=$HOME/rabia-backups # Parent directory for all "backup scripts" and "backup-config".
 BACKUP_DAILY_GIT=$BIN_GIT/backup-daily-git # Executable for daily backups.
 BACKUP_CONFIG_GIT=$BIN_GIT/backup-config-git # Location of configuration file.
-BACKUP_TARGET_GIT=/tmp # Parent destination where all backups will be stored. Must be changed to meet your criteria.
-LOG_DIR_GIT=/tmp/backup-logs-git # Location of log files.
+BACKUP_TARGET_GIT=/git-backups # Parent destination where all backups will be stored. Must be changed to meet your criteria.
+LOG_DIR_GIT=/var/logs/backup-logs-git # Location of log files.
 DISK_SPACE_ALERT=90 # Backups are aborted if this disk space threshold is reached.
 BACKUP_USER="backup-git" # Default remote and local backup user. This user can be overridden in the config file.
 VCS_USER="vcs" # GIT account that serves up the repos.
