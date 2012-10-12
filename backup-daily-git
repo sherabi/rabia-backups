@@ -17,7 +17,8 @@
 #along with backup-daily.  If not, see <http://www.gnu.org/licenses/>.
 
 ### This script is called by "run-backup-daily" ###
-. backup-headers-git
+TOP_DIR=$(cd $(dirname "$0") && pwd)
+source $TOP_DIR/backup-headers-git
 
 BACKUP_MAIL="$LOG_DIR_GIT/backup-mail-daily"
 DISK_STATUS="$LOG_DIR_GIT/disk-report-daily"

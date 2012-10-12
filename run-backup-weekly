@@ -17,7 +17,9 @@
 #along with run-backup-weekly.  If not, see <http://www.gnu.org/licenses/>.
 
 ### DO NOT EDIT BELOW THIS LINE ###
-. backup-headers
-mkdir -p $LOG_DIR
+TOP_DIR=$(cd $(dirname "$0") && pwd)
+source $TOP_DIR/backup-headers
+
+mkdir -p $LOG_DIR $BACKUP_TARGET
 cat $BACKUP_CONFIG | grep -v '^\#' | grep -v '^$' | grep -i 'weekly' | awk -F":" '{ print $1":"$2":"$3":"$4":"$5":"$6":"$7":"$8":"$9 }' > $BACKUP_CONFIG_WEEKLY
 $BACKUP_WEEKLY -t $BACKUP_TARGET -c $BACKUP_CONFIG_WEEKLY -l $BACKUP_LOG_WEEKLY -u $BACKUP_USER

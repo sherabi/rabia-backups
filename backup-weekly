@@ -17,7 +17,8 @@
 #along with backup-weekly.  If not, see <http://www.gnu.org/licenses/>.
 
 ### This script is called by "run-backup-weekly" ###
-. backup-headers
+TOP_DIR=$(cd $(dirname "$0") && pwd)
+source $TOP_DIR/backup-headers
 
 EXCLUDE_FILE="$LOG_DIR/backup-excludes-weekly"
 INCLUDE_FILE="$LOG_DIR/backup-includes-weekly"
