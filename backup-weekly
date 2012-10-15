@@ -218,43 +218,7 @@ location_sync_full() {
 weekly_full_backup() {
     local server=$1
     local weekday=`date +%A` ## day of week in string 
-    if [[ $weekday == "Monday" && $INTERVAL == "weekly-full-monday" ]]; then
-        dir="$DESTINATION/$server/weekly/weekly-full/$weekday"
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        cd $dir
-        location_sync_full $server
-    elif [[ $weekday == "Tuesday" && $INTERVAL == "weekly-full-tuesday" ]]; then
-        dir="$DESTINATION/$server/weekly/weekly-full/$weekday"
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        cd $dir
-        location_sync_full $server
-    elif [[ $weekday == "Wednesday" && $INTERVAL == "weekly-full-wednesday" ]]; then
-        dir="$DESTINATION/$server/weekly/weekly-full/$weekday"
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        cd $dir
-        location_sync_full $server
-    elif [[ $weekday == "Thursday" && $INTERVAL == "weekly-full-thursday" ]]; then
-        dir="$DESTINATION/$server/weekly/weekly-full/$weekday"
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        cd $dir
-        location_sync_full $server
-    elif [[ $weekday == "Friday" && $INTERVAL == "weekly-full-friday" ]]; then
-        dir="$DESTINATION/$server/weekly/weekly-full/$weekday"
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        cd $dir
-        location_sync_full $server
-    elif [[ $weekday == "Saturday" && $INTERVAL == "weekly-full-saturday" ]]; then
-        dir="$DESTINATION/$server/weekly/weekly-full/$weekday"
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        cd $dir
-        location_sync_full $server
-    elif [[ $weekday == "Sunday" && $INTERVAL == "weekly-full-sunday" ]]; then
+    if [[ $weekday && $INTERVAL == "weekly-full-"$weekday ]]; then
         dir="$DESTINATION/$server/weekly/weekly-full/$weekday"
         mkdir -p $dir
         delete_old $RETENTION $server $dir
@@ -306,43 +270,7 @@ location_sync_incremental() {
 weekly_incremental_backup() {
     local server=$1
     local weekday=`date +%A`
-    if [[ $weekday == "Monday" && $INTERVAL == "weekly-incremental-monday" ]]; then
-        dir=$DESTINATION/$server/weekly/weekly-incremental/$weekday
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        location_sync_incremental $server
-        copy_to_today $server $weekday
-    elif [[ $weekday == "Tuesday" && $INTERVAL == "weekly-incremental-tuesday" ]]; then
-        dir=$DESTINATION/$server/weekly/weekly-incremental/$weekday
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        location_sync_incremental $server
-        copy_to_today $server $weekday
-    elif [[ $weekday == "Wednesday" && $INTERVAL == "weekly-incremental-wednesday" ]]; then
-        dir=$DESTINATION/$server/weekly/weekly-incremental/$weekday
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        location_sync_incremental $server
-        copy_to_today $server $weekday
-    elif [[ $weekday == "Thursday" && "$INTERVAL" == "weekly-incremental-thursday" ]]; then
-        dir=$DESTINATION/$server/weekly/weekly-incremental/$weekday
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        location_sync_incremental $server
-        copy_to_today $server $weekday
-    elif [[ $weekday == "Friday" && $INTERVAL == "weekly-incremental-friday" ]]; then
-        dir=$DESTINATION/$server/weekly/weekly-incremental/$weekday
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        location_sync_incremental $server
-        copy_to_today $server $weekday
-    elif [[ $weekday == "Saturday" && $INTERVAL == "weekly-incremental-saturday" ]]; then
-        dir=$DESTINATION/$server/weekly/weekly-incremental/$weekday
-        mkdir -p $dir
-        delete_old $RETENTION $server $dir
-        location_sync_incremental $server
-        copy_to_today $server $weekday
-    elif [[ $weekday == "Sunday" && $INTERVAL == "weekly-incremental-sunday" ]]; then
+    if [[ $weekday && $INTERVAL == "weekly-incremental-"$weekday ]]; then
         dir=$DESTINATION/$server/weekly/weekly-incremental/$weekday
         mkdir -p $dir
         delete_old $RETENTION $server $dir
