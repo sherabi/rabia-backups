@@ -168,7 +168,8 @@ delete_old() {
             echo "Files to delete, count match: $delete_num"
         fi
     elif [ "$count" -gt "$1" ]; then
-        delete_num=$[$count-$1+1]
+        #delete_num=$[$count-$1+1]
+        delete_num=$[$count-$1]
         echo "Files to delete, count greater: $delete_num"
     else
         delete_num=0
