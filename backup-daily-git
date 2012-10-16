@@ -174,7 +174,7 @@ delete_old() {
         delete_num=0
         echo "Nothing to delete: $delete_num"
     fi
-        cd $DESTINATION/$server/
+        #cd $DESTINATION/$server/
         local mystack=`echo ${filestack[@]} | sort | tr " " "\n" | head -n$delete_num | xargs -d '\n' rm -rf`
 }
 
@@ -185,7 +185,9 @@ backup_remote() {
 	mkdir -p $GIT_BACKUPS
 	while read line
         do
+			cd $DESTINATION/$SERVER/git-backups/$line/full
             delete_old $RETENTION $SERVER $DESTINATION/$SERVER/git-backups/$line/full
+			cd $DESTINATION/$SERVER/git-backups/$line/bare
             delete_old $RETENTION $SERVER $DESTINATION/$SERVER/git-backups/$line/bare
             git clone $VCS_USER@$server:$line $GIT_BACKUPS/$line/full/$TODAY
             git clone --bare $VCS_USER@$server:$line $GIT_BACKUPS/$line/bare/$TODAY
