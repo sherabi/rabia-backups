@@ -25,7 +25,7 @@
 # can use * instead, like so: /var/www/Web*                               	#
 #                                                                         	#
 #############################################################################
-
+# Rename this file to "backup-config"
 # BE CAREFUL: THIS CONFIGURATION FILE IS CASE SENSITIVE where the Month, Weekday names should be capitalized.
 # Field Definitions.
 #  field1   field2    field3   field4     field5          field6           field7        field8    field9

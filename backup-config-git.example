@@ -22,7 +22,7 @@
 # /var/www/Web Site X/html will be represented as/var/www/Web?Site?X/html 	#
 #                                                                         	#
 #############################################################################
-
+# Rename this file to "backup-config-git"
 # Field Definitions.
 #  field1	field2		field3			field4     		field5          	field6 		field7
 # git-user:Server/IP:repoitory-name:Retention-days:destination-overide:user-override:non-admin-emails
