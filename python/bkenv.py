@@ -12,7 +12,7 @@ BACKUP_YEARLY = BIN+"/backup-yearly" # Executable for yearly backups.
 BACKUP_CONFIG = HOME+"/mydev/backup-config" # Location of configuration file.
 BACKUP_TARGET = HOME+"/mydev/backups" # Parent destination where all backups will be stored. Must be changed to meet your criteria.
 LOG_DIR = HOME+"/mydev/backup-logs" # Location of log files.
-DISK_SPACE_ALERT = 90 # Backups are aborted if this disk space threshold is reached.
+DISK_SPACE_ALERT = 95 # Backups are aborted if this disk space threshold is reached.
 BACKUP_USER = "stopiwala" # Default remote and local backup user. This user can be overridden in the config file.
 ADMIN_EMAILS = "stopiwala@questrade.com"
 

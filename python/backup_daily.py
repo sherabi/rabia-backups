@@ -8,7 +8,6 @@ import shutil
 import subprocess
 import socket
 import smtplib
-#from email.mime.text import MIMEText
 from bkenv import *
 
 hostname = socket.gethostname()
@@ -18,8 +17,6 @@ BACKUP_MAIL = LOG_DIR+"/backup-mail-daily"
 DISK_STATUS = LOG_DIR+"/disk-report-daily"
 RSYNC='rsync -avR --delete --stats'
 
-now = datetime.datetime.now()
-rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 TODAY = now.strftime("%Y-%m-%d")
 DESTINATION = "foo"
 OVERIDE_USER = "bar"
@@ -86,29 +83,37 @@ def parse_daily_config():
 		EXCLUDE_FILE.close()
 
 		if (len(TARGET) == 0) and (len(BASE_BACKUP_DIR) > 0):
+			now = datetime.datetime.now()
+			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " + SERVER + " ===\n"
-			print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
+			#print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***"
 			print "Only default location specified: Priority set to Default " + BASE_BACKUP_DIR
 			DESTINATION = BASE_BACKUP_DIR
 			print "Destination:", DESTINATION
 		elif (len(TARGET) > 0) and (len(BASE_BACKUP_DIR) == 0):
+			now = datetime.datetime.now()
+			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " + SERVER + " ===\n"
-			print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
+			#print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***"
 			print "Only target location specified: Priority set to Target " + TARGET
 			DESTINATION = TARGET
 			print "Destination:", DESTINATION
 		elif (len(TARGET) > 0) and (len(BASE_BACKUP_DIR) > 0):
+			now = datetime.datetime.now()
+			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " +  SERVER + " ===\n"
-			print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
+			#print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***"
 			print "Both locations specified: Priority set to Target " + TARGET
 			DESTINATION = TARGET
 			print "Destination:", DESTINATION
 		elif (len(TARGET) == 0) and (len(BASE_BACKUP_DIR) == 0):
+			now = datetime.datetime.now()
+			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " + SERVER + " ===\n"
-			print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
+			#print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***"
 			print "Neither locations specified: Priority set to Target " + TARGET
 			DESTINATION = TARGET
@@ -144,6 +149,10 @@ def parse_daily_config():
 			#time.sleep(1)
 			backup_local(SERVER)
 		copy_to_today(SERVER)
+		#time.sleep(3)
+		new_time = datetime.datetime.now()
+		print "*** BACKUPS FOR " + SERVER + " ENDED "+ new_time.strftime("%Y-%m-%d@%H:%M:%S") + " ***"
+		print "=== END OF BACKUPS FOR " + SERVER +" ===\n"
 
 	config.close()
 
@@ -211,7 +220,13 @@ def copy_to_today(server):
 	NEW_DST = DESTINATION+server+"/daily/"+TODAY
 	if not os.path.exists(NEW_DST):
 		os.makedirs(NEW_DST)
-	subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True).communicate()
+	#subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True).communicate()
+	process = subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	out = process.communicate()
+	myout = out[0]
+	myerr = out[1]
+	print myout
+	print myerr
 
 def backup_remote(server):
 	global DESTINATION
@@ -223,7 +238,13 @@ def backup_remote(server):
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
 		print RSYNC + " --exclude-from=" + EXCLUDE_FILENAME + " -e ssh " + OVERIDE_USER + "@" + server + ":" + line + " " + CURRENT
-		subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' -e ssh ' + OVERIDE_USER + '@' + server + ':' + line + ' ' + CURRENT, shell=True).communicate()
+		#subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' -e ssh ' + OVERIDE_USER + '@' + server + ':' + line + ' ' + CURRENT, shell=True).communicate()
+		process = subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' -e ssh ' + OVERIDE_USER + '@' + server + ':' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		out = process.communicate()
+		myout = out[0]
+		myerr = out[1]
+		print myout
+		print myerr
 	INC_FILE.close()
 
 def backup_local(server):
@@ -236,29 +257,30 @@ def backup_local(server):
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
 		print RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' ' + line + ' ' + CURRENT
-		subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' ' + line + ' ' + CURRENT, shell=True).communicate()
+		#subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' ' + line + ' ' + CURRENT, shell=True).communicate()
+		process = subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' ' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		out = process.communicate()
+		myout = out[0]
+		myerr = out[1]
+		print myout
+		print myerr
 	INC_FILE.close()
 
 def disk_space_check():
 	global DESTINATION
-	#print "My DEST: ", DESTINATION
-	#print "My DISK FILE: ", DISK_STATUS
 	ds = open(DISK_STATUS, 'w+')
 	subprocess.Popen('df -hP ' + DESTINATION, shell=True, stdout=ds).communicate()
+	#subprocess.Popen('df -hP ' + DESTINATION, shell=True, stdout=ds)
 	ds.close()
 	ds = open(DISK_STATUS, 'r')
 	for i, line in enumerate(ds):
 		if i == 1:
 			s = line.split(' ')
-			#print s
 			partition = s[0]
-			#print "Partition:", partition
-			#print "Used:", s[9]
 			use_perc = s[9]
 			for char in use_perc:
 				if char in "%":
 					used_percentage = int(use_perc.replace(char,''))
-					#print "Used Percentage:", used_percentage
 					if used_percentage > DISK_SPACE_ALERT:
 						#time.sleep(3)
 						new_time = datetime.datetime.now()
@@ -283,9 +305,6 @@ def is_number(s):
 def main(argv):
 	try:
 		options, args = getopt.getopt(argv, "t:c:l:u:", ["target=", "config=", "logfile=", "user="])
-		#print "Options: ", options
-		#print "Args:", args
-
 	except getopt.GetoptError:
 		print "Usage...TBD"
 		sys.exit(1)
@@ -294,19 +313,15 @@ def main(argv):
 		if opt in ("-t", "--target"):
 			global BASE_BACKUP_DIR
 			BASE_BACKUP_DIR = arg
-			#print BASE_BACKUP_DIR
 		elif opt in ("-c", "--config"):
 			global BACKUP_CONFIG
 			BACKUP_CONFIG = arg
-			#print BACKUP_CONFIG
 		elif opt in ("-l", "--logfile"):
 			global BACKUP_LOG
 			BACKUP_LOG = arg
-			#print BACKUP_LOG
 		elif opt in ("-u", "--user"):
 			global BACKUP_USER
 			BACKUP_USER = arg
-			#print BACKUP_USER
 	parse_generic_config()
 	parse_daily_config()
 
