@@ -9,6 +9,7 @@ import subprocess
 import socket
 from bkenv import *
 
+# Pre startup variables
 hostname = socket.gethostname()
 EXCLUDE_FILENAME = LOG_DIR+"/backup-excludes-daily"
 INCLUDE_FILENAME = LOG_DIR+"/backup-includes-daily"
@@ -28,28 +29,9 @@ if not os.path.exists(BACKUP_TARGET):
     os.makedirs(BACKUP_TARGET)
 
 bkout = open(BACKUP_LOG_DAILY, 'w+')
-'''
-def parse_config():
-	config = open(BACKUP_CONFIG, 'r')
-	config_daily = open(BACKUP_CONFIG_DAILY, 'w+')
-	for line in config:
-		line = line.rstrip()
-		if line != '': # Ignore newlines or empty lines
-			if not line.startswith("#"): #Ignore comments
-				field = line.split(':')
-				LOCATION = field[0]
-				SERVER = field[1]
-				INCLUDES = field[2]
-				EXCLUDES = field[3]
-				RETENTION = field[4]
-				TARGET = field[5]
-				USER = field[6]
-				INTERVAL = field[7]
-				MAIL_LIST = field[8]
-				config_daily.write(LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST+"\n")
-'''
 
 # Parse out ONLY the DAILY configuration file.
+# The daily configuration file is created by the run file.
 def parse_daily_config():
 	global DESTINATION
 	global OVERIDE_USER
@@ -171,10 +153,9 @@ def parse_daily_config():
 		bkout.write("*** BACKUPS FOR " + SERVER + " ENDED "+ new_time.strftime("%Y-%m-%d@%H:%M:%S") + " ***\n")
 		print "=== END OF BACKUPS FOR " + SERVER + " ===\n\n"
 		bkout.write("=== END OF BACKUPS FOR " + SERVER + " ===\n\n")
-		#strip_chunk(SERVER)
 	config.close()
 
-# Delete backup older than RETENTION number of backups.
+# Delete backups older than the RETENTION number of backups.
 def delete_old(RETENTION, SERVER, DIRECTORY):
 	DESTINATION = DIRECTORY
 	print "Deletion destination" + DESTINATION
@@ -252,6 +233,8 @@ def delete_old(RETENTION, SERVER, DIRECTORY):
 	for folder in delete_stack:
 		shutil.rmtree(folder)
 
+# Hardlink files from "current" directory to todays dated directory.
+# Hardlinks here allow for incremental backups.
 def copy_to_today(server):
 	global DESTINATION
 	CURRENT = DESTINATION+server+"/daily/current"
@@ -267,6 +250,7 @@ def copy_to_today(server):
 	print myerr
 	bkout.write(myout + myerr + "\n")
 
+# If backup is to type "remote" then rsync over ssh.
 def backup_remote(server):
 	global DESTINATION
 	CURRENT = DESTINATION+server+"/daily/current"
@@ -287,6 +271,7 @@ def backup_remote(server):
 		bkout.write(myout + myerr + "\n")
 	INC_FILE.close()
 
+# If backup is of type "local" then do a regular rsync.
 def backup_local(server):
 	global DESTINATION
 	CURRENT = DESTINATION+server+"/daily/current"
@@ -307,6 +292,7 @@ def backup_local(server):
 		bkout.write(myout + myerr + "\n")
 	INC_FILE.close()
 
+# Check for diskspace and compare against threshold alert in bkenv.py
 def disk_space_check():
 	global DESTINATION
 	ds = open(DISK_STATUS, 'w+')
@@ -335,34 +321,8 @@ def disk_space_check():
 						print 'Threshold for disk space was reached at, ' + str(DISK_SPACE_ALERT) + '% backup was aborted.'
 						sys.exit(1)
 
-# Keep this around for a while
-
-'''
-def strip_chunk(server):
-	new_time = datetime.datetime.now()
-	right_now = new_time.strftime("%Y-%m-%d@%H:%M:%S") 
-	print "Log file is: ", BACKUP_LOG_DAILY
-	bkout.write("Log file is: " + BACKUP_LOG_DAILY + "\n")
-	bkout.close()
-	inFile = open(BACKUP_LOG_DAILY).readlines()
-	print "INFILE ", inFile
-	outFile = open(BACKUP_LOG_DAILY+"_"+server+"_"+right_now, 'w+')
-	readahead = False
-	print "Inside strip_chunk"
-	for myline in inFile:
-		print myline
-		print "I am in infile"
-		if myline.startswith("=== START OF BACKUPS FOR " + server + " ==="):
-			readahead = True
-			print "readahead = TRUE"
-		elif myline.startswith("=== END OF BACKUPS FOR " + server + " ==="):
-			outFile.write(myline)
-			readahead = False
-			outFile.close()
-		if readahead:
-			outFile.write(myline)
-'''
-
+# Yank text between "START" and "END" delimiters of the main log file.
+# and write it out to an independant server log file with timestamp.
 def strip_chunk():
 	config = open(BACKUP_CONFIG).readlines()
 	for line in config:
@@ -386,6 +346,7 @@ def strip_chunk():
 					if parsing:
 						outfile.write(myline)
 
+# Check if variable is a number or not
 def is_number(s):
 	try:
 		float(s)
@@ -413,7 +374,6 @@ def main(argv):
 		elif opt in ("-u", "--user"):
 			global BACKUP_USER
 			BACKUP_USER = arg
-	#parse_config()
 	parse_daily_config()
 
 if __name__ == "__main__":
