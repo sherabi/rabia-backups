@@ -28,14 +28,11 @@ for line in config:
 			config_daily.write(LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST+"\n")
 
 #This is the main command to run
-cmd = "python "+ BACKUP_DAILY + " -t " + BACKUP_TARGET + " -c " + BACKUP_CONFIG_DAILY + " -l " +  BACKUP_LOG_DAILY + " -u " +  BACKUP_USER
+cmd = "python " + BACKUP_DAILY + " -t " + BACKUP_TARGET + " -c " + BACKUP_CONFIG_DAILY + " -l " +  BACKUP_LOG_DAILY + " -u " +  BACKUP_USER
 print cmd
-out = open(BACKUP_LOG_DAILY, 'w+')
-#err = open('', 'w+')
-subprocess.Popen(cmd, shell=True, stdout=out)
-#subprocess.Popen(cmd, shell=True)
-out.close()
-#err.close()
-
+output = open(BACKUP_LOG_DAILY, 'w+')
+subprocess.Popen(cmd, shell=True, stdout=output)
+#subprocess.Popen(cmd, shell=True, stdout=out, stderr=out)
+output.close()
 config.close()
 config_daily.close()
