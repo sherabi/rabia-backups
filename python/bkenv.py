@@ -5,7 +5,7 @@ HOME = os.getenv("HOME")
 now = datetime.datetime.now()
 
 BIN = HOME+"/rabia-backups" # Parent directory for all "backup scripts" and "backup-config".
-BACKUP_DAILY = HOME+"/mydev/backup-daily.py" # Executable for daily backups.
+BACKUP_DAILY = HOME+"/mydev/backup_daily.py" # Executable for daily backups.
 BACKUP_WEEKLY = BIN+"/backup-weekly" # Executable for weekly backups.
 BACKUP_MONTHLY = BIN+"/backup-monthly" # Executable for monthly backups.
 BACKUP_YEARLY = BIN+"/backup-yearly" # Executable for yearly backups.
