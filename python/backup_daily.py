@@ -354,15 +354,29 @@ def is_number(s):
 	except ValueError:
 		return False
 
+def usage():
+	print "\n\tbackup_daily.py -t target -c config_file -l log_file -u backup_username"
+	print "\t-h --help: Print this help."
+	print "\t-t --target: Location of backups, see or edit bkenv.py."
+	print "\t-c --config: Location of config file, see or edit backup-config."
+	print "\t-l --logfile: Location of log file, see or edit bkenv.py."
+	print "\t-u --user: User whose ssh key/s permit backups."
+
 # Evaluate all the options/flags
 def main(argv):
+	help = False
 	try:
-		options, args = getopt.getopt(argv, "t:c:l:u:", ["target=", "config=", "logfile=", "user="])
+		options, args = getopt.getopt(argv, "ht:c:l:u:", ["target=", "config=", "logfile=", "user=", "help"])
+		if len(options) < 4:
+			usage()
+			sys.exit(3)
 	except getopt.GetoptError:
-		print "Usage...TBD"
-		sys.exit(1)
+		print "Exception not working"
+		sys.exit(2)
 	for opt, arg in options:
-		if opt in ("-t", "--target"):
+		if opt in ("-h", "--help"):
+			print "Something is wrong"
+		elif opt in ("-t", "--target"):
 			global BASE_BACKUP_DIR
 			BASE_BACKUP_DIR = arg
 		elif opt in ("-c", "--config"):
