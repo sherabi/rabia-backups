@@ -135,7 +135,7 @@ def parse_daily_config():
 
 		disk_space_check()
 		try:
-			delete_old(RETENTION, SERVER, DESTINATION+SERVER+"/daily")
+			delete_old(RETENTION, SERVER, DESTINATION+"/"+SERVER+"/daily")
 		except:
 			print "Directory to delete does not exist"
 			bkout.write("Directory to delete does not exist\n")
@@ -237,8 +237,8 @@ def delete_old(RETENTION, SERVER, DIRECTORY):
 # Hardlinks here allow for incremental backups.
 def copy_to_today(server):
 	global DESTINATION
-	CURRENT = DESTINATION+server+"/daily/current"
-	NEW_DST = DESTINATION+server+"/daily/"+TODAY
+	CURRENT = DESTINATION+"/"+server+"/daily/current"
+	NEW_DST = DESTINATION+"/"+server+"/daily/"+TODAY
 	if not os.path.exists(NEW_DST):
 		os.makedirs(NEW_DST)
 	#subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True).communicate()
@@ -253,8 +253,8 @@ def copy_to_today(server):
 # If backup is to type "remote" then rsync over ssh.
 def backup_remote(server):
 	global DESTINATION
-	CURRENT = DESTINATION+server+"/daily/current"
-	DAILY_DST = DESTINATION+server+"/daily/"
+	CURRENT = DESTINATION+"/"+server+"/daily/current"
+	DAILY_DST = DESTINATION+"/"+server+"/daily/"
 	if not os.path.exists(DAILY_DST):
 		os.makedirs(DAILY_DST)
 	INC_FILE = open(INCLUDE_FILENAME, 'r')
@@ -274,8 +274,8 @@ def backup_remote(server):
 # If backup is of type "local" then do a regular rsync.
 def backup_local(server):
 	global DESTINATION
-	CURRENT = DESTINATION+server+"/daily/current"
-	DAILY_DST = DESTINATION+server+"/daily/"
+	CURRENT = DESTINATION+"/"+server+"/daily/current"
+	DAILY_DST = DESTINATION+"/"+server+"/daily/"
 	if not os.path.exists(DAILY_DST):
 		os.makedirs(DAILY_DST)
 	INC_FILE = open(INCLUDE_FILENAME, 'r')
@@ -295,6 +295,8 @@ def backup_local(server):
 # Check for diskspace and compare against threshold alert in bkenv.py
 def disk_space_check():
 	global DESTINATION
+	if not os.path.exists(DESTINATION):
+		os.makedirs(DESTINATION)
 	ds = open(DISK_STATUS, 'w+')
 	subprocess.Popen('df -hP ' + DESTINATION, shell=True, stdout=ds).communicate()
 	#subprocess.Popen('df -hP ' + DESTINATION, shell=True, stdout=ds)
