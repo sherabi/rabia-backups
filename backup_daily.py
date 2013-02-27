@@ -374,12 +374,14 @@ def is_number(s):
 		return False
 
 def usage():
-	print "\n\tbackup_daily.py -t target -c config_file -l log_file -u backup_username"
+	print "\n\tUsage: backup_daily.py -t target -c config_file -l log_file -u backup_username"
 	print "\t-h --help: Print this help."
 	print "\t-t --target: Location of backups, see or edit bkenv.py."
 	print "\t-c --config: Location of config file, see or edit backup-config."
 	print "\t-l --logfile: Location of log file, see or edit bkenv.py."
 	print "\t-u --user: User whose ssh key/s permit backups."
+	print "\tGlobal/Default settings editable by file bkenv.py."
+	print "\tConfiguration/Overiding bkenv.py settings editable by file backup-config."
 
 # Evaluate all the options/flags
 def main(argv):
