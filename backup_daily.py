@@ -94,7 +94,6 @@ def parse_daily_config():
 			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " + SERVER + " ===\n"
 			bkout.write("=== START OF BACKUPS FOR " + SERVER + " ===\n")
-			#print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***"
 			bkout.write("*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***\n")
 			print "Only target location specified: Priority set to Target " + TARGET
@@ -107,7 +106,6 @@ def parse_daily_config():
 			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " +  SERVER + " ===\n"
 			bkout.write("=== START OF BACKUPS FOR " + SERVER + " ===\n")
-			#print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***"
 			bkout.write("*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***\n")
 			print "Both locations specified: Priority set to Target " + TARGET
@@ -119,7 +117,6 @@ def parse_daily_config():
 			now = datetime.datetime.now()
 			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " + SERVER + " ===\n"
-			#print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***\n"
 			print "Neither locations specified: Priority set to Target " + TARGET
 			DESTINATION = TARGET
@@ -258,7 +255,6 @@ def copy_to_today(server):
 	NEW_DST = DESTINATION+"/"+server+"/daily/"+TODAY
 	if not os.path.exists(NEW_DST):
 		os.makedirs(NEW_DST)
-	#subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True).communicate()
 	process = subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	out = process.communicate()
 	myout = out[0]
@@ -278,7 +274,6 @@ def backup_remote(server):
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
 		print RSYNC + " --exclude-from=" + EXCLUDE_FILENAME + " -e ssh " + OVERIDE_USER + "@" + server + ":" + line + " " + CURRENT
-		#subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' -e ssh ' + OVERIDE_USER + '@' + server + ':' + line + ' ' + CURRENT, shell=True).communicate()
 		process = subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' -e ssh ' + OVERIDE_USER + '@' + server + ':' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		out = process.communicate()
 		myout = out[0]
@@ -299,7 +294,6 @@ def backup_local(server):
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
 		print RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' ' + line + ' ' + CURRENT
-		#subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' ' + line + ' ' + CURRENT, shell=True).communicate()
 		process = subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' ' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		out = process.communicate()
 		myout = out[0]
@@ -316,7 +310,6 @@ def disk_space_check():
 		os.makedirs(DESTINATION)
 	ds = open(DISK_STATUS, 'w+')
 	subprocess.Popen('df -hP ' + DESTINATION, shell=True, stdout=ds).communicate()
-	#subprocess.Popen('df -hP ' + DESTINATION, shell=True, stdout=ds)
 	ds.close()
 	ds = open(DISK_STATUS, 'r')
 	for i, line in enumerate(ds):
