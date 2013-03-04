@@ -1,21 +1,4 @@
 #!/usr/bin/python
-#backup_daily.py is released under the General Public License.
-#Copyright (C) 2010-2012 Shezaan Topiwala
-#This file is part of "Rabia Backups".
-
-#backup_daily.py is free software: you can redistribute it and or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
-#(at your option) any later version.
-
-#backup_daily.py is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
-
-#You should have received a copy of the GNU General Public License
-#along with backup_daily.py.  If not, see <http://www.gnu.org/licenses/>.
-
 import sys
 import getopt
 import os
@@ -43,7 +26,7 @@ if not os.path.exists(LOG_DIR):
 	os.makedirs(LOG_DIR, 0744)
 # Create Target directory.
 if not os.path.exists(BACKUP_TARGET):
-    os.makedirs(BACKUP_TARGET)
+	os.makedirs(BACKUP_TARGET)
 
 bkout = open(BACKUP_LOG_DAILY, 'w+')
 
@@ -94,6 +77,7 @@ def parse_daily_config():
 			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " + SERVER + " ===\n"
 			bkout.write("=== START OF BACKUPS FOR " + SERVER + " ===\n")
+			#print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***"
 			bkout.write("*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***\n")
 			print "Only target location specified: Priority set to Target " + TARGET
@@ -106,6 +90,7 @@ def parse_daily_config():
 			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " +  SERVER + " ===\n"
 			bkout.write("=== START OF BACKUPS FOR " + SERVER + " ===\n")
+			#print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***"
 			bkout.write("*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***\n")
 			print "Both locations specified: Priority set to Target " + TARGET
@@ -117,6 +102,7 @@ def parse_daily_config():
 			now = datetime.datetime.now()
 			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " + SERVER + " ===\n"
+			#print LOCATION+":"+SERVER+":"+INCLUDES+":"+EXCLUDES+":"+RETENTION+":"+TARGET+":"+USER+":"+INTERVAL+":"+MAIL_LIST
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***\n"
 			print "Neither locations specified: Priority set to Target " + TARGET
 			DESTINATION = TARGET
@@ -255,13 +241,35 @@ def copy_to_today(server):
 	NEW_DST = DESTINATION+"/"+server+"/daily/"+TODAY
 	if not os.path.exists(NEW_DST):
 		os.makedirs(NEW_DST)
+	if not os.path.exists(CURRENT):
+		os.makedirs(CURRENT)
+	# Start of adding support to remove an exclusion if it previously existed
+	EXC_FILE = open(EXCLUDE_FILENAME, 'r')
+	if os.stat(EXCLUDE_FILENAME)[6] != 1:
+		for exc_line in EXC_FILE:
+			line = exc_line.rstrip()
+			delete_path = CURRENT+"/"+line
+			print "Delete path is:",delete_path
+			#if os.path.isdir(CURRENT+"/"+line) and os.path.exists(CURRENT+"/"+line):
+				#shutil.rmtree(CURRENT+"/"+line)
+			#elif  os.path.exists(CURRENT+"/"+line):
+				#os.remove(CURRENT+"/"+line)
+			rm_process = subprocess.Popen('rm -rf ' + delete_path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			rm_out = rm_process.communicate()
+			rm_myout = rm_out[0]
+			rm_myerr = rm_out[1]
+			bkout.write(rm_myout + rm_myerr + "\n")
+			#print rm_myout
+			#print rm_myerr
+	EXC_FILE.close()
+	# End of adding support to remove an exclusion if it previously existed
 	process = subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	out = process.communicate()
 	myout = out[0]
 	myerr = out[1]
-	print myout
-	print myerr
 	bkout.write(myout + myerr + "\n")
+	#print myout
+	#print myerr
 
 # If backup is to type "remote" then rsync over ssh.
 def backup_remote(server):
@@ -274,6 +282,7 @@ def backup_remote(server):
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
 		print RSYNC + " --exclude-from=" + EXCLUDE_FILENAME + " -e ssh " + OVERIDE_USER + "@" + server + ":" + line + " " + CURRENT
+		#subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' -e ssh ' + OVERIDE_USER + '@' + server + ':' + line + ' ' + CURRENT, shell=True).communicate()
 		process = subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' -e ssh ' + OVERIDE_USER + '@' + server + ':' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		out = process.communicate()
 		myout = out[0]
@@ -294,6 +303,7 @@ def backup_local(server):
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
 		print RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' ' + line + ' ' + CURRENT
+		#subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' ' + line + ' ' + CURRENT, shell=True).communicate()
 		process = subprocess.Popen(RSYNC + ' --exclude-from=' + EXCLUDE_FILENAME + ' ' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		out = process.communicate()
 		myout = out[0]
@@ -310,6 +320,7 @@ def disk_space_check():
 		os.makedirs(DESTINATION)
 	ds = open(DISK_STATUS, 'w+')
 	subprocess.Popen('df -hP ' + DESTINATION, shell=True, stdout=ds).communicate()
+	#subprocess.Popen('df -hP ' + DESTINATION, shell=True, stdout=ds)
 	ds.close()
 	ds = open(DISK_STATUS, 'r')
 	for i, line in enumerate(ds):
@@ -375,6 +386,7 @@ def usage():
 	print "\t-u --user: User whose ssh key/s permit backups."
 	print "\tGlobal/Default settings editable by file bkenv.py."
 	print "\tConfiguration/Overiding bkenv.py settings editable by file backup-config."
+
 
 # Evaluate all the options/flags
 def main(argv):
