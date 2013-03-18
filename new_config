@@ -1,0 +1,48 @@
+#These are the default settings.
+[Defaults]
+backup_type = local
+include = /some_default_crap
+exclude = 
+backup_location = /tmp/backups
+retention = 3
+username = root
+log_dir = /tmp/backup_logs
+include_file = %(log_dir)s/backup_includes_daily
+exclude_file = %(log_dir)s/backup_excludes_daily
+disk_alert = 90
+disk_report =  %(log_dir)s/disk-report-daily
+admin_emails = stopiwala@questrade.com
+non_admin_emails = stopiwala@questrade.com
+interval = daily
+
+[127.0.0.1]
+backup_type = local
+include = /qt_home/stopiwala/test, /qt_home/stopiwala/Documents
+exclude = /qt_home/stopiwala/mydev/backup-logs
+backup_location = /tmp/backups
+retention = 3
+username = stopiwala
+log_dir = /tmp/backup_logs
+include_file = %(log_dir)s/backup_includes_daily
+exclude_file = %(log_dir)s/backup_excludes_daily
+disk_alert = 90
+disk_report =  %(log_dir)s/disk-report-daily
+admin_emails = stopiwala@questrade.com
+non_admin_emails = stopiwala@questrade.com
+interval = daily
+
+[localhost]
+backup_type = remote
+include = /qt_home/stopiwala/Documents, /qt_home/stopiwala/mydev       
+exclude = 
+backup_location = /tmp/backups
+retention = 3
+username = stopiwala
+log_dir = /tmp/backup_logs
+include_file = %(log_dir)s/backup_includes_daily
+exclude_file = %(log_dir)s/backup_excludes_daily
+disk_alert = 90
+disk_report =  %(log_dir)s/disk-report-daily
+admin_emails = stopiwala@questrade.com
+non_admin_emails = stopiwala@questrade.com
+interval = daily
