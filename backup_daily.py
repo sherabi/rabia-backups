@@ -55,6 +55,8 @@ def parse_config():
 			# Initialize backup mail file
 			BACKUP_MAIL = LOG_DIR+"/backup_mail_daily"
 			BACKUP_LOG_DAILY = LOG_DIR + "/backup_log_daily_" + SERVER
+			INCLUDE_FILENAME =  LOG_DIR + "/backup_includes_daily_" + SERVER
+			EXCLUDE_FILENAME =  LOG_DIR + "/backup_excludes_daily_" + SERVER
 			print "log:", BACKUP_LOG_DAILY
 			bkout = open(BACKUP_LOG_DAILY, 'w+')
 		else:
@@ -106,20 +108,6 @@ def parse_config():
 			bkout.write('interval not set for section %s' % (section_name))
 			continue
 
-		if parser.has_option(section_name, 'include_file'):
-			INCLUDE_FILENAME = parser.get(section_name, 'include_file')
-		else:
-			print 'include_file not set for section %s' % (section_name)
-			bkout.write('include_file not set for section %s' % (section_name))
-			continue
-
-		if parser.has_option(section_name, 'exclude_file'):
-			EXCLUDE_FILENAME = parser.get(section_name, 'exclude_file')
-		else:
-			print 'exclude_file not set for section %s' % (section_name)
-			bkout.write('exclude_file not set for section %s' % (section_name))
-			continue
-
 		if parser.has_option(section_name, 'username'):
 			USER = parser.get(section_name, 'username')
 		else:
@@ -155,12 +143,12 @@ def parse_config():
 			bkout.write('disk_report not set for section %s' % (section_name))
 			continue
 
-	 	INCLUDE_FILE = open(INCLUDE_FILENAME+"_"+SERVER, 'w+')
+	 	INCLUDE_FILE = open(INCLUDE_FILENAME, 'w+')
 		for inc in INCLUDES.split(','):
 			INCLUDE_FILE.write(inc.lstrip(' ')+"\n")
 		INCLUDE_FILE.close()
 		
-		EXCLUDE_FILE = open(EXCLUDE_FILENAME+"_"+SERVER, 'w+')
+		EXCLUDE_FILE = open(EXCLUDE_FILENAME, 'w+')
 		for exc in EXCLUDES.split(','):
 			EXCLUDE_FILE.write(exc.lstrip(' ')+"\n")
 		EXCLUDE_FILE.close()
@@ -170,7 +158,6 @@ def parse_config():
 			bkout.write("username field is empty")
 			continue
 
-		#for option in ['exclude', 'username', 'non_admin_emails']:
 		if (len(DESTINATION) > 0):
 			now = datetime.datetime.now()
 			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
@@ -194,22 +181,11 @@ def parse_config():
 			bkout.write("Directory to delete does not exist\n")
 			pass
 		if LOCATION == "remote":
-			#time.sleep(1)
-			backup_remote(SERVER, DESTINATION, INCLUDE_FILENAME+"_"+SERVER, EXCLUDE_FILENAME+"_"+SERVER, USER)
+			backup_remote(SERVER, DESTINATION, INCLUDE_FILENAME, EXCLUDE_FILENAME, USER)
 		else:
-			#time.sleep(1)
-			backup_local(SERVER, DESTINATION, INCLUDE_FILENAME+"_"+SERVER, EXCLUDE_FILENAME+"_"+SERVER)
-		copy_to_today(SERVER, DESTINATION, EXCLUDE_FILENAME+"_"+SERVER)
+			backup_local(SERVER, DESTINATION, INCLUDE_FILENAME, EXCLUDE_FILENAME)
+		copy_to_today(SERVER, DESTINATION, EXCLUDE_FILENAME)
 		bkout.close()
-
-		#print parser.get(section_name, 'include')
-		#print 'Section:', section_name
-		#print '    Options:', parser.options(section_name)
-		#for name, value in parser.items(section_name):
-			#print '    %s = %s' % (name,value)
-			#print parser.get(section_name, 'include')
-		#print
-	#print parser.get('Defaults', 'section_name')
 
 def disk_space_check(directory, alert_threshold, disk_report, admin_emails, server):
 	global BACKUP_MAIL
@@ -228,7 +204,6 @@ def disk_space_check(directory, alert_threshold, disk_report, admin_emails, serv
 				if char in "%":
 					used_percentage = int(use_perc.replace(char,''))
 					if (used_percentage > int(alert_threshold)):
-						#time.sleep(3)
 						now = datetime.datetime.now()
 						backup_mail = open(BACKUP_MAIL, 'a+')
 						backup_mail.write('Running out of space on ' + hostname + ' for partition ' + partition + ' as of ' + now.strftime("%Y-%m-%d@%H:%M:%S") + '.\n')
@@ -324,7 +299,6 @@ def delete_old(retention, server, directory):
 	for folder in delete_stack:
 		shutil.rmtree(folder)
 	bkout.flush()
-	#bkout.close()
 
 # If backup is to type "remote" then rsync over ssh.
 def backup_remote(server, directory, include_file, exclude_file, username):
@@ -339,7 +313,6 @@ def backup_remote(server, directory, include_file, exclude_file, username):
 		line = inc_line.rstrip()
 		print RSYNC + " --exclude-from=" + exclude_file + " -e ssh " + username + "@" + server + ":" + line + " " + CURRENT
 		process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' -e ssh ' + username + '@' + server + ':' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		#process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' -e ssh ' + username + '@' + server + ':' + line + ' ' + CURRENT, shell=True, stdout=bkout)
 		ret_code = process.wait()
 		out = process.communicate()
 		myout = out[0]
@@ -349,7 +322,6 @@ def backup_remote(server, directory, include_file, exclude_file, username):
 		bkout.write(myout + myerr + "\n")
 	INC_FILE.close()
 	bkout.flush()
-	#bkout.close()
 
 # If backup is of type "local" then do a regular rsync.
 def backup_local(server, directory, include_file, exclude_file):
@@ -364,7 +336,6 @@ def backup_local(server, directory, include_file, exclude_file):
 		line = inc_line.rstrip()
 		print RSYNC + ' --exclude-from=' + include_file + ' ' + line + ' ' + CURRENT
 		process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' ' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		#process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' ' + line + ' ' + CURRENT, shell=True, stdout=bkout, stderr=bkout)
 		ret_code = process.wait()
 		out = process.communicate()
 		myout = out[0]
@@ -374,7 +345,6 @@ def backup_local(server, directory, include_file, exclude_file):
 	bkout.write(myout + myerr + "\n")
 	INC_FILE.close()
 	bkout.flush()
-	#bkout.close()
 
 # Hardlink files from "current" directory to todays dated directory.
 # Hardlinks here allow for incremental backups.
@@ -397,7 +367,6 @@ def copy_to_today(server, directory, exclude_file):
 			delete_path = CURRENT+"/"+line
 			print "Delete path is:",delete_path
 			rm_process = subprocess.Popen('rm -rf ' + delete_path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-			#rm_process = subprocess.Popen('rm -rf ' + delete_path, shell=True, stdout=bkout, stderr=bkout)
 			ret_code_rm = rm_process.wait()
 			rm_out = rm_process.communicate()
 			rm_myout = rm_out[0]
@@ -405,7 +374,6 @@ def copy_to_today(server, directory, exclude_file):
 			bkout.write(rm_myout + rm_myerr + "\n")
 	EXC_FILE.close()
 	# End of adding support to remove an exclusion if it previously existed
-	#process = subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True, stdout=bkout, stderr=bkout)
 	process = subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	ret_code = process.wait()
 	out = process.communicate()
@@ -419,6 +387,5 @@ def copy_to_today(server, directory, exclude_file):
 	bkout.write("*** BACKUPS FOR " + SERVER + " ENDED "+ new_time.strftime("%Y-%m-%d@%H:%M:%S") + " ***\n")
 	bkout.write("=== END OF BACKUPS FOR " + SERVER + " ===\n\n")
 	bkout.flush()
-	#bkout.close()
 
 parse_config()
