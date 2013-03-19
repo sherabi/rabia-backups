@@ -187,7 +187,6 @@ def parse_config():
 		bkout.close()
 
 def disk_space_check(directory, alert_threshold, disk_report, admin_emails, server):
-	global BACKUP_MAIL
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	ds = open(disk_report, 'w+')
