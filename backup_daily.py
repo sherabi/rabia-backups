@@ -366,7 +366,6 @@ def backup_local(server, directory, include_file, exclude_file):
 		process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' ' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		#process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' ' + line + ' ' + CURRENT, shell=True, stdout=bkout, stderr=bkout)
 		ret_code = process.wait()
-		#bkout.flush()
 		out = process.communicate()
 		myout = out[0]
 		myerr = out[1]
