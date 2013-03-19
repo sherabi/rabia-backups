@@ -24,7 +24,6 @@ import time
 import shutil
 import subprocess
 import socket
-import pickle
 from ConfigParser import SafeConfigParser
 
 hostname = socket.gethostname()
