@@ -35,8 +35,6 @@ parser.read(config)
 RSYNC='rsync -avR --delete --stats'
 BACKUP_LOG_DAILY = "junk"
 BACKUP_MAIL = "junk_mail"
-#nolog = "nolog"
-#nolog_out = open(nolog, 'w+')
 DESTINATION = "foo"
 SERVER = "whatever"
 
