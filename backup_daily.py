@@ -28,7 +28,7 @@ import pickle
 from ConfigParser import SafeConfigParser
 
 hostname = socket.gethostname()
-config = 'new_config'
+config = 'backup_config'
 parser = SafeConfigParser()
 parser.read(config)
 
@@ -63,17 +63,6 @@ def parse_config():
 			print 'log_dir not set for section %s' % (section_name)
 			continue
 		
-		#if parser.has_option(section_name, 'daily_log'):
-		#	BACKUP_LOG_DAILY = LOG_DIR + "/" + SERVER
-			#BACKUP_LOG_DAILY = parser.get(section_name, 'daily_log')
-		#	print "log:", BACKUP_LOG_DAILY
-		#	bkout = open(BACKUP_LOG_DAILY, 'w+')
-		#else:
-		#	print 'daily_log not set for section %s' % (section_name)
-		#	nolog_out.write('daily_log not set for section %s' % (section_name))
-		#	nolog_out.close()
-		#	continue
-
 		if parser.has_option(section_name, 'backup_type'):
 			LOCATION = parser.get(section_name, 'backup_type')
 		else:
@@ -200,12 +189,12 @@ def parse_config():
 
 		disk_space_check(DESTINATION, DISK_ALERT, DISK_REPORT, ADMIN_EMAILS, SERVER)
 		bkout.flush()	
-		#try:
-		delete_old(RETENTION, SERVER, DESTINATION+"/"+SERVER+"/daily")
-		#except:
-			#print "Directory to delete does not exist"
-			##bkout.write("Directory to delete does not exist\n")
-			#pass
+		try:
+			delete_old(RETENTION, SERVER, DESTINATION+"/"+SERVER+"/daily")
+		except:
+			print "Directory to delete does not exist"
+			bkout.write("Directory to delete does not exist\n")
+			pass
 		if LOCATION == "remote":
 			#time.sleep(1)
 			backup_remote(SERVER, DESTINATION, INCLUDE_FILENAME+"_"+SERVER, EXCLUDE_FILENAME+"_"+SERVER, USER)
@@ -434,9 +423,5 @@ def copy_to_today(server, directory, exclude_file):
 	bkout.write("=== END OF BACKUPS FOR " + SERVER + " ===\n\n")
 	bkout.flush()
 	#bkout.close()
-
-def test():
-	print "backup_log", BACKUP_LOG_DAILY
-	print "destination", DESTINATION
 
 parse_config()
