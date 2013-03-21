@@ -289,11 +289,11 @@ def delete_old(retention, server, directory):
 		pass
 
 	delete_stack = sorted_stack[:delete_num]
-	print "Delete these %s" %(delete_stack)
-	bkout.write("Delete these %s\n" %(delete_stack))
+	print "Delete these: %s" %(delete_stack)
+	bkout.write("Delete these: %s\n" %(delete_stack))
 	keep_stack = sorted_stack[delete_num:]
-	print "Keep these ", keep_stack
-	bkout.write("Keep these %s\n" %(keep_stack))
+	print "Keep these: %s" %(keep_stack)
+	bkout.write("Keep these: %s\n" %(keep_stack))
 	for folder in delete_stack:
 		shutil.rmtree(folder)
 	bkout.flush()
