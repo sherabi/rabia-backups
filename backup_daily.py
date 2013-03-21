@@ -362,7 +362,6 @@ def copy_to_today(server, directory, exclude_file):
 	if os.stat(exclude_file)[6] != 1:
 		for exc_line in EXC_FILE:
 			line = exc_line.rstrip()
-			#delete_path = CURRENT+"/"+line
 			delete_path = CURRENT+line
 			if os.path.exists(delete_path):
 				print "Delete path is: %s" %(delete_path)
