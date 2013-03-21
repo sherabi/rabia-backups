@@ -362,8 +362,14 @@ def copy_to_today(server, directory, exclude_file):
 	if os.stat(exclude_file)[6] != 1:
 		for exc_line in EXC_FILE:
 			line = exc_line.rstrip()
-			delete_path = CURRENT+"/"+line
-			print "Delete path is:",delete_path
+			#delete_path = CURRENT+"/"+line
+			delete_path = CURRENT+line
+			if os.path.exists(delete_path):
+				print "Delete path is: %s" %(delete_path)
+				bkout.write("Delete path is: %s\n" %(delete_path))
+			else:
+				print "Exclusion path doesn't exist or is already removed."
+				bkout.write("Exclusion path doesn't exist or is already removed.")
 			rm_process = subprocess.Popen('rm -rf ' + delete_path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			ret_code_rm = rm_process.wait()
 			rm_out = rm_process.communicate()
