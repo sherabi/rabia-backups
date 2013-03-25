@@ -159,11 +159,11 @@ def parse_config():
 		if (len(DESTINATION) > 0):
 			now = datetime.datetime.now()
 			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
-			print "=== START OF BACKUPS FOR " + SERVER + " ===\n"
-			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***"
+			print "=== START OF BACKUPS FOR %s ===\n" %(SERVER)
+			print "*** BACKUPS FOR %s STARTED %s ***" %(SERVER, rightnow)
 			print "Destination: %s" %(DESTINATION)
-			bkout.write("=== START OF BACKUPS FOR " + SERVER + " ===\n")
-			bkout.write("*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***\n")
+			bkout.write("=== START OF BACKUPS FOR %s ===\n" %(SERVER))
+			bkout.write("*** BACKUPS FOR %s STARTED %s ***\n" %(SERVER, rightnow))
 			bkout.write("Destination: %s\n" %(DESTINATION))
 		else:
 			print "backup_location field is empty"
@@ -338,6 +338,7 @@ def backup_local(server, directory, include_file, exclude_file):
 def copy_to_today(server, directory, exclude_file):
 	global SERVER
 	now = datetime.datetime.now()
+	rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 	TODAY = now.strftime("%Y-%m-%d")
 	bkout = open(BACKUP_LOG_DAILY, 'a', 0)
 	CURRENT = directory+"/"+server+"/daily/current"
@@ -367,10 +368,10 @@ def copy_to_today(server, directory, exclude_file):
 	process = subprocess.Popen('cp -al %s/* %s' %(CURRENT, NEW_DST), shell=True, stdout=bkout, stderr=bkout)
 	ret_code = process.wait()
 	new_time = datetime.datetime.now()
-	print "*** BACKUPS FOR " + SERVER + " ENDED "+ new_time.strftime("%Y-%m-%d@%H:%M:%S") + " ***"
-	print "=== END OF BACKUPS FOR " + SERVER + " ===\n\n"
-	bkout.write("*** BACKUPS FOR " + SERVER + " ENDED "+ new_time.strftime("%Y-%m-%d@%H:%M:%S") + " ***\n")
-	bkout.write("=== END OF BACKUPS FOR " + SERVER + " ===\n\n")
+	print "*** BACKUPS FOR %s ENDED %s ***" %(SERVER, rightnow)
+	print "=== END OF BACKUPS FOR %s ===\n\n" %(SERVER)
+	bkout.write("*** BACKUPS FOR %s ENDED %s ***\n" %(SERVER, rightnow))
+	bkout.write("=== END OF BACKUPS FOR %s ===\n\n" %(SERVER))
 	bkout.flush()
 
 parse_config()
