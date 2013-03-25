@@ -308,9 +308,9 @@ def backup_remote(server, directory, include_file, exclude_file, username):
 	INC_FILE = open(include_file, 'r')
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
-		print RSYNC + " --exclude-from=" + exclude_file + " -e ssh " + username + "@" + server + ":" + line + " " + CURRENT
-		bkout.write(RSYNC + " --exclude-from=" + exclude_file + " -e ssh " + username + "@" + server + ":" + line + " " + CURRENT + "\n")
-		process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' -e ssh ' + username + '@' + server + ':' + line + ' ' + CURRENT, shell=True, stdout=bkout, stderr=bkout)
+		print "%s --exclude-from=%s -e ssh %s@%s:%s %s" %(RSYNC, exclude_file, username, server, line, CURRENT)
+		bkout.write("%s --exclude-from=%s -e ssh %s@%s:%s %s\n" %(RSYNC, exclude_file, username, server, line, CURRENT))
+		process = subprocess.Popen("%s --exclude-from=%s -e ssh %s@%s:%s %s\n" %(RSYNC, exclude_file, username, server, line, CURRENT), shell=True, stdout=bkout, stderr=bkout)
 		ret_code = process.wait()
 	INC_FILE.close()
 	bkout.flush()
@@ -327,9 +327,9 @@ def backup_local(server, directory, include_file, exclude_file):
 	INC_FILE = open(include_file, 'r')
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
-		print RSYNC + ' --exclude-from=' + include_file + ' ' + line + ' ' + CURRENT
-		bkout.write(RSYNC + ' --exclude-from=' + include_file + ' ' + line + ' ' + CURRENT + "\n")
-		process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' ' + line + ' ' + CURRENT, shell=True, stdout=bkout, stderr=bkout)
+		print "%s --exclude-from=%s %s %s" %(RSYNC, exclude_file, line, CURRENT)
+		bkout.write("%s --exclude-from=%s %s %s\n" %(RSYNC, exclude_file, line, CURRENT))
+		process = subprocess.Popen("%s --exclude-from=%s %s %s\n" %(RSYNC, exclude_file, line, CURRENT), shell=True, stdout=bkout, stderr=bkout)
 		ret_code = process.wait()
 	INC_FILE.close()
 	bkout.flush()
@@ -360,12 +360,12 @@ def copy_to_today(server, directory, exclude_file):
 			else:
 				print "Exclusion path doesn't exist or is already removed."
 				bkout.write("Exclusion path doesn't exist or is already removed.\n")
-			rm_process = subprocess.Popen('rm -rf ' + delete_path, shell=True, stdout=bkout, stderr=bkout)
+			rm_process = subprocess.Popen('rm -rf %s' %(delete_path), shell=True, stdout=bkout, stderr=bkout)
 			ret_code_rm = rm_process.wait()
 	EXC_FILE.close()
 	# End of adding support to remove an exclusion if it previously existed
 
-	process = subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True, stdout=bkout, stderr=bkout)
+	process = subprocess.Popen('cp -al %s/* %s' %(CURRENT, NEW_DST), shell=True, stdout=bkout, stderr=bkout)
 	ret_code = process.wait()
 	new_time = datetime.datetime.now()
 	print "*** BACKUPS FOR " + SERVER + " ENDED "+ new_time.strftime("%Y-%m-%d@%H:%M:%S") + " ***"
