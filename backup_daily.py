@@ -57,7 +57,7 @@ def parse_config():
 			INCLUDE_FILENAME =  LOG_DIR + "/backup_includes_daily_" + SERVER
 			EXCLUDE_FILENAME =  LOG_DIR + "/backup_excludes_daily_" + SERVER
 			print "log:", BACKUP_LOG_DAILY
-			bkout = open(BACKUP_LOG_DAILY, 'w+')
+			bkout = open(BACKUP_LOG_DAILY, 'w+', 0)
 		else:
 			print 'log_dir not set for section %s' % (section_name)
 			continue
@@ -171,9 +171,10 @@ def parse_config():
 			bkout.write("backup_location field is empty")
 			continue
 
+		bkout.flush()
 		disk_space_check(DESTINATION, DISK_ALERT, DISK_REPORT, ADMIN_EMAILS, SERVER)
-		bkout.flush()	
 		try:
+			bkout.flush()
 			delete_old(RETENTION, SERVER, DESTINATION+"/"+SERVER+"/daily")
 		except:
 			print "Directory to delete does not exist"
@@ -223,12 +224,10 @@ def is_number(s):
 def delete_old(retention, server, directory):
 	now = datetime.datetime.now()
 	TODAY = now.strftime("%Y-%m-%d")
-	bkout = open(BACKUP_LOG_DAILY, 'a')
-	print "Deletion destination: %s" %(directory)
-	bkout.write("Deletion destination: %s\n" %(directory))
 	count = 0
 	filestack = []
 	discard = []
+	bkout = open(BACKUP_LOG_DAILY, 'a', 0)
 	for dir in os.listdir(directory):
 		try:
 			pattern = dir.split('-')
@@ -287,7 +286,6 @@ def delete_old(retention, server, directory):
 		print "Unable to switch directory, no such directory or permission issue"
 		bkout.write("Unable to switch directory, no such directory or permission issue\n")
 		pass
-
 	delete_stack = sorted_stack[:delete_num]
 	print "Delete these: %s" %(delete_stack)
 	bkout.write("Delete these: %s\n" %(delete_stack))
@@ -298,10 +296,11 @@ def delete_old(retention, server, directory):
 		shutil.rmtree(folder)
 	bkout.flush()
 
-# If backup is to type "remote" then rsync over ssh.
+# If backup is of type "remote" then rsync over ssh.
 def backup_remote(server, directory, include_file, exclude_file, username):
-	print "Daily LOG:", BACKUP_LOG_DAILY
-	bkout = open(BACKUP_LOG_DAILY, 'a+')
+	print "Daily LOG: %s" %(BACKUP_LOG_DAILY)
+	bkout = open(BACKUP_LOG_DAILY, 'a', 0)
+	bkout.write("Daily LOG: %s\n" %(BACKUP_LOG_DAILY))
 	CURRENT = directory+"/"+server+"/daily/current"
 	DAILY_DST = directory+"/"+server+"/daily/"
 	if not os.path.exists(DAILY_DST):
@@ -310,21 +309,17 @@ def backup_remote(server, directory, include_file, exclude_file, username):
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
 		print RSYNC + " --exclude-from=" + exclude_file + " -e ssh " + username + "@" + server + ":" + line + " " + CURRENT
-		process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' -e ssh ' + username + '@' + server + ':' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		bkout.write(RSYNC + " --exclude-from=" + exclude_file + " -e ssh " + username + "@" + server + ":" + line + " " + CURRENT + "\n")
+		process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' -e ssh ' + username + '@' + server + ':' + line + ' ' + CURRENT, shell=True, stdout=bkout, stderr=bkout)
 		ret_code = process.wait()
-		out = process.communicate()
-		myout = out[0]
-		myerr = out[1]
-		print myout
-		print myerr
-		bkout.write(myout + myerr + "\n")
 	INC_FILE.close()
 	bkout.flush()
 
 # If backup is of type "local" then do a regular rsync.
 def backup_local(server, directory, include_file, exclude_file):
 	print "Daily LOG:", BACKUP_LOG_DAILY
-	bkout = open(BACKUP_LOG_DAILY, 'a+')
+	bkout = open(BACKUP_LOG_DAILY, 'a', 0)
+	bkout.write("Daily LOG: %s\n" %(BACKUP_LOG_DAILY))
 	CURRENT = directory+"/"+server+"/daily/current"
 	DAILY_DST = directory+"/"+server+"/daily/"
 	if not os.path.exists(DAILY_DST):
@@ -333,14 +328,9 @@ def backup_local(server, directory, include_file, exclude_file):
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
 		print RSYNC + ' --exclude-from=' + include_file + ' ' + line + ' ' + CURRENT
-		process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' ' + line + ' ' + CURRENT, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		bkout.write(RSYNC + ' --exclude-from=' + include_file + ' ' + line + ' ' + CURRENT + "\n")
+		process = subprocess.Popen(RSYNC + ' --exclude-from=' + exclude_file + ' ' + line + ' ' + CURRENT, shell=True, stdout=bkout, stderr=bkout)
 		ret_code = process.wait()
-		out = process.communicate()
-		myout = out[0]
-		myerr = out[1]
-		print myout
-		print myerr
-	bkout.write(myout + myerr + "\n")
 	INC_FILE.close()
 	bkout.flush()
 
@@ -350,14 +340,15 @@ def copy_to_today(server, directory, exclude_file):
 	global SERVER
 	now = datetime.datetime.now()
 	TODAY = now.strftime("%Y-%m-%d")
-	bkout = open(BACKUP_LOG_DAILY, 'a+')
+	bkout = open(BACKUP_LOG_DAILY, 'a', 0)
 	CURRENT = directory+"/"+server+"/daily/current"
 	NEW_DST = directory+"/"+server+"/daily/"+TODAY
 	if not os.path.exists(NEW_DST):
 		os.makedirs(NEW_DST)
 	if not os.path.exists(CURRENT):
 		os.makedirs(CURRENT)
-	# Start of adding support to remove an exclusion if it previously existed
+
+	# Start of adding support to remove an exclusion from "current" if it previously existed
 	EXC_FILE = open(exclude_file, 'r')
 	if os.stat(exclude_file)[6] != 1:
 		for exc_line in EXC_FILE:
@@ -368,22 +359,14 @@ def copy_to_today(server, directory, exclude_file):
 				bkout.write("Delete path is: %s\n" %(delete_path))
 			else:
 				print "Exclusion path doesn't exist or is already removed."
-				bkout.write("Exclusion path doesn't exist or is already removed.")
-			rm_process = subprocess.Popen('rm -rf ' + delete_path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+				bkout.write("Exclusion path doesn't exist or is already removed.\n")
+			rm_process = subprocess.Popen('rm -rf ' + delete_path, shell=True, stdout=bkout, stderr=bkout)
 			ret_code_rm = rm_process.wait()
-			rm_out = rm_process.communicate()
-			rm_myout = rm_out[0]
-			rm_myerr = rm_out[1]
-			bkout.write(rm_myout + rm_myerr + "\n")
 	EXC_FILE.close()
 	# End of adding support to remove an exclusion if it previously existed
-	process = subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	ret_code = process.wait()
-	out = process.communicate()
-	myout = out[0]
-	myerr = out[1]
-	bkout.write(myout + myerr + "\n")
 
+	process = subprocess.Popen('cp -al ' + CURRENT+"/* " + NEW_DST, shell=True, stdout=bkout, stderr=bkout)
+	ret_code = process.wait()
 	new_time = datetime.datetime.now()
 	print "*** BACKUPS FOR " + SERVER + " ENDED "+ new_time.strftime("%Y-%m-%d@%H:%M:%S") + " ***"
 	print "=== END OF BACKUPS FOR " + SERVER + " ===\n\n"
