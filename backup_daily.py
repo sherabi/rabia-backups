@@ -56,7 +56,6 @@ def parse_config():
 			BACKUP_LOG_DAILY = LOG_DIR + "/backup_log_daily_" + SERVER
 			INCLUDE_FILENAME =  LOG_DIR + "/backup_includes_daily_" + SERVER
 			EXCLUDE_FILENAME =  LOG_DIR + "/backup_excludes_daily_" + SERVER
-			print "log:", BACKUP_LOG_DAILY
 			bkout = open(BACKUP_LOG_DAILY, 'w+', 0)
 		else:
 			print 'log_dir not set for section %s' % (section_name)
@@ -162,10 +161,10 @@ def parse_config():
 			rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 			print "=== START OF BACKUPS FOR " + SERVER + " ===\n"
 			print "*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***"
-			print "Destination: " + DESTINATION
+			print "Destination: %s" %(DESTINATION)
 			bkout.write("=== START OF BACKUPS FOR " + SERVER + " ===\n")
 			bkout.write("*** BACKUPS FOR " + SERVER + " STARTED " + rightnow + " ***\n")
-			bkout.write("Destination: " + DESTINATION + "\n")
+			bkout.write("Destination: %s\n" %(DESTINATION))
 		else:
 			print "backup_location field is empty"
 			bkout.write("backup_location field is empty")
