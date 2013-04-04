@@ -308,9 +308,9 @@ def backup_remote(server, directory, include_file, exclude_file, username):
 	INC_FILE = open(include_file, 'r')
 	for inc_line in INC_FILE:
 		line = inc_line.rstrip()
-		print "%s --exclude-from=%s -e ssh %s@%s:%s %s" %(RSYNC, exclude_file, username, server, line, CURRENT)
-		bkout.write("%s --exclude-from=%s -e ssh %s@%s:%s %s\n" %(RSYNC, exclude_file, username, server, line, CURRENT))
-		process = subprocess.Popen("%s --exclude-from=%s -e ssh %s@%s:%s %s\n" %(RSYNC, exclude_file, username, server, line, CURRENT), shell=True, stdout=bkout, stderr=bkout)
+		print "%s --exclude-from=%s %s@%s:%s %s" %(RSYNC, exclude_file, username, server, line, CURRENT)
+		bkout.write("%s --exclude-from=%s %s@%s:%s %s\n" %(RSYNC, exclude_file, username, server, line, CURRENT))
+		process = subprocess.Popen("%s --exclude-from=%s %s@%s:%s %s\n" %(RSYNC, exclude_file, username, server, line, CURRENT), shell=True, stdout=bkout, stderr=bkout)
 		ret_code = process.wait()
 	INC_FILE.close()
 	bkout.flush()
