@@ -337,7 +337,6 @@ def backup_local(server, directory, include_file, exclude_file):
 # Hardlink files from "current" directory to todays dated directory.
 # Hardlinks here allow for incremental backups.
 def copy_to_today(server, directory, exclude_file):
-	global SERVER
 	now = datetime.datetime.now()
 	rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
 	TODAY = now.strftime("%Y-%m-%d")
@@ -369,10 +368,10 @@ def copy_to_today(server, directory, exclude_file):
 	process = subprocess.Popen('cp -al %s/* %s' %(CURRENT, NEW_DST), shell=True, stdout=bkout, stderr=bkout)
 	ret_code = process.wait()
 	new_time = datetime.datetime.now()
-	print "*** BACKUPS FOR %s ENDED %s ***" %(SERVER, rightnow)
-	print "=== END OF BACKUPS FOR %s ===\n\n" %(SERVER)
-	bkout.write("*** BACKUPS FOR %s ENDED %s ***\n" %(SERVER, rightnow))
-	bkout.write("=== END OF BACKUPS FOR %s ===\n\n" %(SERVER))
+	print "*** BACKUPS FOR %s ENDED %s ***" %(server, rightnow)
+	print "=== END OF BACKUPS FOR %s ===\n\n" %(server)
+	bkout.write("*** BACKUPS FOR %s ENDED %s ***\n" %(server, rightnow))
+	bkout.write("=== END OF BACKUPS FOR %s ===\n\n" %(server))
 	bkout.flush()
 
 def uniq(inlist): 
