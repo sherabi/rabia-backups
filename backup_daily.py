@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #backup_daily.py is released under the General Public License.
-#Copyright (C) 2010-2012 Shezaan Topiwala
+#Copyright (C) 2010-2013 Shezaan Topiwala
 #This file is part of "Rabia Backups".
 
 #backup_daily.py is free software: you can redistribute it and or modify
@@ -24,6 +24,7 @@ import time
 import shutil
 import subprocess
 import socket
+import fnmatch
 from ConfigParser import SafeConfigParser
 
 hostname = socket.gethostname()
@@ -358,8 +359,8 @@ def copy_to_today(server, directory, exclude_file):
 				print "Delete path is: %s" %(delete_path)
 				bkout.write("Delete path is: %s\n" %(delete_path))
 			else:
-				print "Exclusion path doesn't exist or is already removed."
-				bkout.write("Exclusion path doesn't exist or is already removed.\n")
+				print "Exclusion path %s doesn't exist or is already removed." %(delete_path)
+				bkout.write("Exclusion path %s doesn't exist or is already removed.\n" %(delete_path))
 			rm_process = subprocess.Popen('rm -rf %s' %(delete_path), shell=True, stdout=bkout, stderr=bkout)
 			ret_code_rm = rm_process.wait()
 	EXC_FILE.close()
@@ -374,4 +375,35 @@ def copy_to_today(server, directory, exclude_file):
 	bkout.write("=== END OF BACKUPS FOR %s ===\n\n" %(SERVER))
 	bkout.flush()
 
+def uniq(inlist): 
+	# order preserving
+	uniques = []
+	for item in inlist:
+		if item not in uniques:
+			uniques.append(item)
+	return uniques
+
+def log_aggregator():
+	now = datetime.datetime.now()
+	rightnow = now.strftime("%Y-%m-%d@%H:%M:%S")
+	log_dir_stack = []
+	for section_name in parser.sections():
+		if parser.has_option(section_name, 'log_dir'):
+			LOG_DIR = parser.get(section_name, 'log_dir')
+			log_dir_stack.append(LOG_DIR)
+	log_dir_stack = uniq(log_dir_stack) # Re-Initialize log_dir_stack with unique entries.
+	for log_dir in log_dir_stack:
+		filestack = []
+		backup_daily_master_log = open(log_dir + "/backup_daily_master_log_" + rightnow, 'a+')
+		for log in os.listdir(log_dir):
+			if fnmatch.fnmatch(log, 'backup_log_daily_*'):
+				file = log_dir + "/" + log
+				filestack.append(file)
+		for filename in filestack:
+			out = open(filename,'r')
+			for line in out:
+				backup_daily_master_log.write(line)
+		backup_daily_master_log.close()
+
 parse_config()
+log_aggregator()
