@@ -179,13 +179,13 @@ def disk_space_check(directory, alert_threshold, disk_report, admin_emails, serv
 	if (used_percentage > int(alert_threshold)):
 		now = datetime.datetime.now()
 		disk_report_mail = open(disk_report, 'w+')
-		disk_report_mail.write('Running out of space on ' + hostname + ' for ' + directory + ' as of ' + now.strftime("%Y-%m-%d@%H:%M:%S") + '.\n')
-		disk_report_mail.write('Threshold for disk space was reached at ' + str(alert_threshold) + '% backup was aborted for ' + server)
+		disk_report_mail.write('Running out of space on %s for %s as of %s.\n' %(hostname, directory, now.strftime("%Y-%m-%d@%H:%M:%S")))
+		disk_report_mail.write('Threshold for disk space was reached at %s%% backup was aborted for %s ' %(str(alert_threshold), server))
 		disk_report_mail.close()
 		mail_str = 'mailx -s  \"Alert: Almost out of disk space, backups ABORTED - ' + str(used_percentage) + '%\" ' + admin_emails + " < " + disk_report
 		subprocess.Popen(mail_str, shell=True)
-		print 'Running out of space on ' + hostname + ' for ' + directory + ' as of ' + now.strftime("%Y-%m-%d@%H:%M:%S") + '.'
-		print 'Threshold for disk space was reached at, ' + str(alert_threshold) + '% backup was aborted.'
+		print 'Running out of space on %s for %s as of %s.' %(hostname, directory, now.strftime("%Y-%m-%d@%H:%M:%S"))
+		print 'Threshold for disk space was reached at, %s%% backup was aborted for %s' %(str(alert_threshold), server)
 		disk_report_mail.close()
 		sys.exit(1)	
 
@@ -242,19 +242,19 @@ def delete_old(retention, server, directory, daily_log):
 			bkout.write("Backup of name %s already exists\n" %(last_element))
 			delete_num = 0
 		else:
-			print "Retention: " + retention
-			bkout.write("Retention: " + retention + "\n")
+			print "Retention: %s" %(retention)
+			bkout.write("Retention: %s.\n" %(retention))
 			delete_num = count-int(retention)+1
-			print "Files to delete, count match: " + str(delete_num)
-			bkout.write("Files to delete, count match: " + str(delete_num) + "\n")
+			print "Files to delete, count match: %s" %(str(delete_num))
+			bkout.write("Files to delete, count match: %s.\n" %(str(delete_num)))
 	elif (count > int(retention)):
 		delete_num = count-int(retention)
-		print "Files to delete, count greater: " + str(delete_num)
-		bkout.write("Files to delete, count greater: " + str(delete_num) + "\n")
+		print "Files to delete, count greater: %s" %(str(delete_num))
+		bkout.write("Files to delete, count greater: %s.\n" %(str(delete_num)))
 	else:
 		delete_num = 0
-		print "Nothing to delete " + str(delete_num)
-		bkout.write("Nothing to delete " + str(delete_num) + "\n")
+		print "Nothing to delete %s" %(str(delete_num))
+		bkout.write("Nothing to delete %s.\n" %(str(delete_num)))
 	try:
 		os.chdir(directory)
 	except:
