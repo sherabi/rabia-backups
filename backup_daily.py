@@ -17,10 +17,8 @@
 #along with backup_daily.py.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-import getopt
 import os
 import datetime
-import time
 import shutil
 import subprocess
 import socket
