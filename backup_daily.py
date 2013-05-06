@@ -43,7 +43,7 @@ def parse_config():
 			if not os.path.exists(log_dir):
 				os.makedirs(log_dir, 0755)
 			# Initialize backup mail file
-			daily_backup_mail = log_dir+"/backup_mail_daily"
+			disk_report = log_dir+"/disk_report_daily"
 			daily_log = log_dir + "/backup_log_daily_" + server
 			include_filename =  log_dir + "/backup_includes_daily_" + server
 			exclude_filename =  log_dir + "/backup_excludes_daily_" + server
@@ -125,13 +125,6 @@ def parse_config():
 			bkout.write('disk_alert not set for section %s' % (section_name))
 			continue
 
-		if parser.has_option(section_name, 'disk_report'):
-			disk_report = parser.get(section_name, 'disk_report')
-		else:
-			print 'disk_report not available for section %s' % (section_name)
-			bkout.write('disk_report not set for section %s' % (section_name))
-			continue
-
 	 	include_file = open(include_filename, 'w+')
 		for inc in includes.split(','):
 			include_file.write(inc.lstrip(' ')+"\n")
@@ -162,7 +155,7 @@ def parse_config():
 			continue
 
 		bkout.flush()
-		disk_space_check(destination, disk_alert, daily_backup_mail, admin_emails, server)
+		disk_space_check(destination, disk_alert, disk_report, admin_emails, server)
 		try:
 			bkout.flush()
 			delete_old(retention, server, destination+"/"+server+"/daily", daily_log)
@@ -177,7 +170,7 @@ def parse_config():
 		copy_to_today(server, destination, exclude_filename, daily_log)
 		bkout.close()
 
-def disk_space_check(directory, alert_threshold, daily_backup_mail, admin_emails, server):
+def disk_space_check(directory, alert_threshold, disk_report, admin_emails, server):
 	st = os.statvfs(directory)
 	free = st.f_bavail * st.f_frsize
 	total = st.f_blocks * st.f_frsize
@@ -185,14 +178,15 @@ def disk_space_check(directory, alert_threshold, daily_backup_mail, admin_emails
 	used_percentage = used * 100 / total
 	if (used_percentage > int(alert_threshold)):
 		now = datetime.datetime.now()
-		backup_mail = open(daily_backup_mail, 'a+')
-		backup_mail.write('Running out of space on ' + hostname + ' for ' + directory + ' as of ' + now.strftime("%Y-%m-%d@%H:%M:%S") + '.\n')
-		backup_mail.write('Threshold for disk space was reached at ' + str(alert_threshold) + '% backup was aborted for ' + server)
-		backup_mail.close()
-		mail_str = 'mailx -s  \"Alert: Almost out of disk space, backups ABORTED - ' + str(used_percentage) + '%\" ' + admin_emails + " < " + daily_backup_mail
+		disk_report_mail = open(disk_report, 'w+')
+		disk_report_mail.write('Running out of space on ' + hostname + ' for ' + directory + ' as of ' + now.strftime("%Y-%m-%d@%H:%M:%S") + '.\n')
+		disk_report_mail.write('Threshold for disk space was reached at ' + str(alert_threshold) + '% backup was aborted for ' + server)
+		disk_report_mail.close()
+		mail_str = 'mailx -s  \"Alert: Almost out of disk space, backups ABORTED - ' + str(used_percentage) + '%\" ' + admin_emails + " < " + disk_report
 		subprocess.Popen(mail_str, shell=True)
 		print 'Running out of space on ' + hostname + ' for ' + directory + ' as of ' + now.strftime("%Y-%m-%d@%H:%M:%S") + '.'
 		print 'Threshold for disk space was reached at, ' + str(alert_threshold) + '% backup was aborted.'
+		disk_report_mail.close()
 		sys.exit(1)	
 
 def is_number(s):
