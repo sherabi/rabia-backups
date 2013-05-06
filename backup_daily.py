@@ -26,6 +26,7 @@ import subprocess
 import socket
 import fnmatch
 from ConfigParser import SafeConfigParser
+from os.path import join, abspath
 
 hostname = socket.gethostname()
 config = 'backup_config'
@@ -309,6 +310,19 @@ def backup_local(server, directory, include_file, exclude_file, daily_log):
 	inc_file.close()
 	bkout.flush()
 
+def hardcopy(src, dst):
+	dest = abspath(dst)
+	os.mkdir(dst)
+	os.chdir(src)
+	for root, dirs, files in os.walk('.'):
+		curdst = join(dst, root)
+		for d in dirs:
+			os.mkdir(join(curdst, d))
+		for f in files:
+			fromfile = join(root, f)
+			to = join(curdst, f)
+			os.link(fromfile, to)
+
 # Hardlink files from "current" directory to todays dated directory.
 # Hardlinks here allow for incremental backups.
 def copy_to_today(server, directory, exclude_file, daily_log):
@@ -318,11 +332,10 @@ def copy_to_today(server, directory, exclude_file, daily_log):
 	bkout = open(daily_log, 'a', 0)
 	current = directory+"/"+server+"/daily/current"
 	new_dst = directory+"/"+server+"/daily/"+today
-	if not os.path.exists(new_dst):
-		os.makedirs(new_dst)
+	if os.path.exists(new_dst):
+		shutil.rmtree(new_dst)
 	if not os.path.exists(current):
 		os.makedirs(current)
-
 	# Start of adding support to remove an exclusion from "current" if it previously existed
 	exc_file = open(exclude_file, 'r')
 	if os.stat(exclude_file)[6] != 1:
@@ -339,10 +352,7 @@ def copy_to_today(server, directory, exclude_file, daily_log):
 			ret_code_rm = rm_process.wait()
 	exc_file.close()
 	# End of adding support to remove an exclusion if it previously existed
-
-	process = subprocess.Popen('cp -al %s/* %s' %(current, new_dst), shell=True, stdout=bkout, stderr=bkout)
-	ret_code = process.wait()
-	new_time = datetime.datetime.now()
+	hardcopy(current, new_dst)
 	print "*** BACKUPS FOR %s ENDED %s ***" %(server, rightnow)
 	print "=== END OF BACKUPS FOR %s ===\n\n" %(server)
 	bkout.write("*** BACKUPS FOR %s ENDED %s ***\n" %(server, rightnow))
@@ -379,8 +389,6 @@ def log_aggregator():
 				backup_daily_master_log.write(line)
 		backup_daily_master_log.close()
 
-
 if __name__ == "__main__":
-#	main(sys.argv[1:])
 	parse_config()
 	log_aggregator()
