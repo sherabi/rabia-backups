@@ -162,7 +162,7 @@ def parse_config():
 			continue
 
 		bkout.flush()
-		disk_space_check(destination, disk_alert, disk_report, admin_emails, server)
+		disk_space_check(destination, disk_alert, daily_backup_mail, admin_emails, server)
 		try:
 			bkout.flush()
 			delete_old(retention, server, destination+"/"+server+"/daily", daily_log)
@@ -177,32 +177,23 @@ def parse_config():
 		copy_to_today(server, destination, exclude_filename, daily_log)
 		bkout.close()
 
-def disk_space_check(directory, alert_threshold, disk_report, admin_emails, server):
-	if not os.path.exists(directory):
-		os.makedirs(directory)
-	ds = open(disk_report, 'w+')
-	subprocess.Popen('df -hP ' + directory, shell=True, stdout=ds).communicate()
-	ds.close()
-	ds = open(disk_report, 'r')
-	for i, line in enumerate(ds):
-		if i == 1:
-			s = line.split(' ')
-			partition = s[0]
-			use_perc = s[8]
-			for char in use_perc:
-				if char in "%":
-					used_percentage = int(use_perc.replace(char,''))
-					if (used_percentage > int(alert_threshold)):
-						now = datetime.datetime.now()
-						backup_mail = open(daily_backup_mail, 'a+')
-						backup_mail.write('Running out of space on ' + hostname + ' for partition ' + partition + ' as of ' + now.strftime("%Y-%m-%d@%H:%M:%S") + '.\n')
-						backup_mail.write('Threshold for disk space was reached at ' + str(alert_threshold) + '% backup was aborted for ' + server)
-						backup_mail.close()
-						mail_str = 'mailx -s  \"Alert: Almost out of disk space, backups ABORTED - ' + str(used_percentage) + '%\" ' + admin_emails + " < " + daily_backup_mail
-						subprocess.Popen(mail_str, shell=True)
-						print 'Running out of space on ' + hostname + ' for partition ' + partition + ' as of ' + now.strftime("%Y-%m-%d@%H:%M:%S") + '.'
-						print 'Threshold for disk space was reached at, ' + str(alert_threshold) + '% backup was aborted.'
-						sys.exit(1)	
+def disk_space_check(directory, alert_threshold, daily_backup_mail, admin_emails, server):
+	st = os.statvfs(directory)
+	free = st.f_bavail * st.f_frsize
+	total = st.f_blocks * st.f_frsize
+	used = (st.f_blocks - st.f_bavail) * st.f_frsize
+	used_percentage = used * 100 / total
+	if (used_percentage > int(alert_threshold)):
+		now = datetime.datetime.now()
+		backup_mail = open(daily_backup_mail, 'a+')
+		backup_mail.write('Running out of space on ' + hostname + ' for ' + directory + ' as of ' + now.strftime("%Y-%m-%d@%H:%M:%S") + '.\n')
+		backup_mail.write('Threshold for disk space was reached at ' + str(alert_threshold) + '% backup was aborted for ' + server)
+		backup_mail.close()
+		mail_str = 'mailx -s  \"Alert: Almost out of disk space, backups ABORTED - ' + str(used_percentage) + '%\" ' + admin_emails + " < " + daily_backup_mail
+		subprocess.Popen(mail_str, shell=True)
+		print 'Running out of space on ' + hostname + ' for ' + directory + ' as of ' + now.strftime("%Y-%m-%d@%H:%M:%S") + '.'
+		print 'Threshold for disk space was reached at, ' + str(alert_threshold) + '% backup was aborted.'
+		sys.exit(1)	
 
 def is_number(s):
 	try:
