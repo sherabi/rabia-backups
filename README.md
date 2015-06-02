@@ -102,7 +102,7 @@ In our example scenario our "backup-config" will look like this:
 
 In our example scenario our "backup-headers" file will look like this:
 ```
-		BIN=/root   # Parent directory for all "backup scripts" and "backup-config". Assuming this is where all the scripts reside.
+        BIN=/root   # Parent directory for all "backup scripts" and "backup-config". Assuming this is where all the scripts reside.
         BACKUP_DAILY=$BIN/backup-daily # Executable for daily backups.
         BACKUP_WEEKLY=$BIN/backup-weekly # Executable for weekly backups.
         BACKUP_MONTHLY=$BIN/backup-monthly # Executable for monthly backups.
@@ -122,7 +122,7 @@ Finally add the following to the "tom" accounts crontab:
 ```
 
 The following holds true for any type of backup or backup schedule:
-	If you anticipate that all backups from every source machine will reside in the same directory eveytime then you can change the BACKUP_TARGET=/tmp in backup-headers to point to that location and instead leave Field6 blank in the backup-config file. 
+	If you anticipate that all backups from every source machine will reside in the same directory eveytime then you can change the `BACKUP_TARGET=/tmp` in backup-headers to point to that location and instead leave Field6 blank in the backup-config file. 
 
-	For example:
-	If you anticipate that all backups from every source machine will reside in the /backups directory eveytime then you can change the BACKUP_TARGET=/tmp in backup-headers to BACKUP_TARGET=/backups and instead leave Field6 (Overriding backup location) blank in the backup-config file.
+For example:
+	If you anticipate that all backups from every source machine will reside in the /backups directory eveytime then you can change the `BACKUP_TARGET=/tmp` in backup-headers to `BACKUP_TARGET=/backups` and instead leave Field6 (Overriding backup location) blank in the backup-config file.
